@@ -2,7 +2,7 @@
 title = "Vim Multiple Cursors to Insert Text"
 date = "2014-09-24"
 slug = "2014/09/24/vim-multiple-cursors-to-insert-text"
-categories = ["vim"," multiple cursors"]
+categories = ["vim"]
 description = ""
 +++
 
