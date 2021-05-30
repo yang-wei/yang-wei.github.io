@@ -24,7 +24,7 @@ jobs:
       - name: Build
         run: hugo --minify
 
-      - name: Deploy
+      - name: Deploy it
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/main'
         with:
