@@ -1,0 +1,103 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Converting Xml to Json by Php |</title><meta name=description content="A simple blog."><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2014/07/14/converting-xml-to-json-by-php/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Converting Xml to Json by Php</h1><div class=post-metadata><time datetime=2014-07-14T00:00:00Z>July 14, 2014</time> &nbsp;
+<i class="far fa-clock"></i>
+3 min
+34 s
+&nbsp;</div></header><div class=post-text><p>{% blockquote Chris Maden %}
+XML is like violence: if it doesn&rsquo;t solve your problem, you aren&rsquo;t using enough of it.
+{% endblockquote %}</p><p>This post aims to convert bulk of <em>xml</em> data in a folder to the <em>json</em>(Javascript String Object Notation) format. Through this way we can remove unwanted data or filter the data to a specific format, thus increasing the flexibility of our output data.</p><ul><li>simplexml_load_file()</li></ul><p>This function converts XML document into an object.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php>$xml <span style=color:#f92672>=</span> <span style=color:#e6db74>&#39;&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34; ?&gt;
+</span><span style=color:#e6db74>			&lt;country&gt;
+</span><span style=color:#e6db74>				&lt;city&gt;
+</span><span style=color:#e6db74>					Alor Star
+</span><span style=color:#e6db74>				&lt;/city&gt;
+</span><span style=color:#e6db74>			&lt;/country&gt;&#39;</span>;
+
+$xml <span style=color:#f92672>=</span> <span style=color:#a6e22e>simplexml_load_file</span>($xml);
+<span style=color:#66d9ef>echo</span> $xml<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>country</span><span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>city</span>;
+<span style=color:#75715e>// Alor Star
+</span></code></pre></div><ul><li>json_encode()</li></ul><p><code>json_encode()</code> changes all input value into a JSON representation of value.</p><pre><code>echo json_encode([a, 'string', 3, &lt;tag&gt;]);
+//[&quot;a&quot;, &quot;string&quot;, 3, &quot;&lt;tag&gt;&quot;]
+
+</code></pre><p>Also, we can add options like <em>JSON_UNESCAPED_UNICODE</em> to make sure foreign character like <em>ひらがな</em>　doesn&rsquo;t break. Also <em>JSON_PRETTY_PRINT</em> to do as it said (print nicely).</p><ul><li>glob()</li></ul><p><code>glob()</code> provides convenient way to match many files in a folder according to the pattern given.</p><pre><code>foreach(glob(&quot;images/*.{png,jpg}&quot;, GLOB_BRACE)) {
+	// do something with all png and jpg format images
+}
+</code></pre><p>The optional parameter <code>GLOB_BRACE</code> expands {png,jpg} to match <em>&lsquo;png&rsquo;</em> or <em>&lsquo;jpg&rsquo;</em>. We can omit it if we only have single pattern to match. For instance <code>glob("*.xml")</code> to match all xml extension files.</p><ul><li>basename()</li></ul><p>This function returns the base name of given path.</p><pre><code>echo basename(&quot;path/xml/first.xml&quot;, &quot;.xml&quot;);
+// first
+</code></pre><p>This is useful when we want to rename our new <code>json</code> files similar from the <code>xml</code> files. For instance, we will want data in <code>first.xml</code> to be store in <code>first.json</code>.</p><ul><li>fopen(), fwrite(), fclose()</li></ul><p>Let&rsquo;s see how we can create new file and write new data into it.</p><pre><code>// open a file 		
+$handle = fopen('file.txt', 'w') or die(&quot;Failed to open file.&quot;);
+// write data to file
+fwrite($handle, 'Some new data');
+// close the file
+fclose($handle);
+</code></pre><p>3 steps. Open the file, copy the data and close it. The second parameter of <code>fopen()</code> indicates the type of access. In this case <em>w</em> means open for writing only. If the file doesn&rsquo;t exist, it will create a new one. If we just want to read the file we can use <em>r</em>.</p><p>###Start Converting
+Revision is done and we can start converting now. Let&rsquo;s us assume our folder structure as below:</p><pre><code>index.php
+--\xml
+		first.xml
+		two.xml
+		three.xml
+--\json
+</code></pre><p>All of our existed xml files are stored in the <em>xml</em> folder. We will convert all of these files into the <em>json</em> format and place them in the <em>json</em> folder. In this blog, I will convert <a href=https://github.com/yang-wei/xml2json/blob/master/xml/countries.xml>xml data</a> which contain information of all countries in the world. <code>index.php</code> might looks like this:</p><pre><code>&lt;?php 
+header(&quot;Content-Type: application/json&quot;) // set the header content-types
+
+function xml2json($file){
+	// main function to do the convertion
+}
+
+$xmlfiles = glob('xml/*.xml')	// get ready for the xml files
+foreach ($xmlfiles as $xmlfile){
+	// loop through each file
+	// create new file, copy data
+}
+
+?&gt;
+</code></pre><p>The <code>index.php</code> is mainly divided into 2 main parts - function and the loop. Let&rsquo;s write the code for the former.</p><pre><code>function xml2json($file){
+	if(file_exist($file)) {
+		// if the file exist, convert them into object
+		$xml = simplexml_load_file($file);
+		$output = [];
+
+		foreach ($xml-&gt;country as $key-&gt;$value) {
+			$filtered_xml = [];
+			// here is where we filter data etc. You can even do something
+			// like convert epoch time to human readable time here.
+			$filtered_xml[&quot;name&quot;] = $value[&quot;name&quot;];
+			$filtered_xml[&quot;currency&quot;] = $value[&quot;currency&quot;];
+
+			// convert them into pretty JSON string
+			$json = json_encode(($filter_xml), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+			array_push($output, $json);
+		}
+
+		//separate all objects by comma 
+		return &quot;[&quot; . implode(&quot;,&quot;, $output) .&quot;]&quot;;
+
+	} else {
+			exit(&quot;Failed to open&quot;. $file);
+	}
+}
+</code></pre><p>Here to make it simpler, we only take 2 data from <code>xml</code> which is <em>name</em> and <em>currency</em>. Next let&rsquo;s code the 2nd part.</p><pre><code>// loop through directory for each xml file
+$xmlfiles = glob('xml/*.xml');
+
+foreach ($xmlfiles as $xmlfile) {
+    //set the output file name to .json
+    $filename = basename($xmlfile, &quot;.xml&quot;).&quot;.json&quot;;
+    $result = xml2json($xmlfile);
+    //create new file
+
+    $handle = fopen($_SERVER['DOCUMENT_ROOT'] .&quot;/xml2json/json/&quot;. $filename, &quot;w&quot;) or die ('Cannot open file: ' .$filename);
+
+    //write json data into new file
+    if( fwrite($handle, $result) === FALSE) {
+        echo &quot;Cannot write to file.&quot;;
+        exit;
+    }
+
+    echo &quot;Success wrote date to file:&quot; .$filename .&quot;\n&quot;;
+    fclose($handle);
+    }
+
+</code></pre><p>Nothing difficult here, just step by step. First we store all the files to convert in the <code>$xmlfiles</code> variable. Next we loop through each of them, create new file and write all the data which is <em>return</em> from our <code>xml2json()</code> function. Note that <code>$_SERVER['DOCYMENT_ROOT']</code> returns current environment path, in this case <code>http://localhost:</code>. Finally we close the file using the function <code>fclose()</code>.</p><p>This is the first part of my mini project. Each week I will try to update a mini project(mostly PHP) to keep myself learning. That&rsquo;s all for this post. The result of the output data can be viewed <a href=https://github.com/yang-wei/xml2json>here</a>.</p><p>###Resource</p><ul><li><a href=http://php.net/>PHP manual</a></li></ul></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

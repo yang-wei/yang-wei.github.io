@@ -1,0 +1,52 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Vue Dot Js Server Side Rendered Data |</title><meta name=description content="Learn to avoid initial http request when creating Vue.js instance."><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2016/01/13/vue-dot-js-server-side-rendered-data/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Vue Dot Js Server Side Rendered Data</h1><div class=post-metadata><time datetime=2016-01-13T00:00:00Z>January 13, 2016</time> &nbsp;
+<i class="far fa-clock"></i>
+1 min
+49 s
+&nbsp;
+<i class="fas fa-folder"></i>
+<a href=/categories/></a>&nbsp;</div></header><div class=post-text><p>Currently I had been using <a href=http://vuejs.org/>Vue.js</a> in work and <a href=https://github.com/yang-wei/vue-redux>hobby</a> so I would like to share something I learnt.</p><blockquote><p>Note: Examples are tested in Vue.js 1.0</p></blockquote><p>When you start your Vue.js application, the first thing you do is probably getting data from your backend or api. Let&rsquo;s say we have a list of comments from our backend server.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>new</span> <span style=color:#a6e22e>App</span>({
+  <span style=color:#a6e22e>created</span>() {
+    <span style=color:#a6e22e>fetch</span>(<span style=color:#e6db74>&#39;/comments&#39;</span>)  <span style=color:#75715e>// using ajax etc
+</span><span style=color:#75715e></span>    .<span style=color:#a6e22e>done</span>(<span style=color:#66d9ef>function</span>(<span style=color:#a6e22e>res</span>) {
+      <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>comments</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>comments</span>; 
+    }.<span style=color:#a6e22e>bind</span>(<span style=color:#66d9ef>this</span>));
+  }
+})
+</code></pre></div><p>This is how our app flow looks like:</p><pre><code>  html from server get rendered -&gt; request data through ajax -&gt; render data via Vue.js
+</code></pre><p>Doing this is totally fine but we can reduce this http request. Making our app flow</p><pre><code>  html + data from server (get rendered and injected) -&gt; render data via Vue.js
+</code></pre><p>We can reduced a http request when initialize our application.
+Let&rsquo;s see how we can do this via Vue.js. We can achieve these by using 2 ways, through the native <a href=http://www.w3.org/html/wg/drafts/html/master/single-page.html#embedding-custom-non-visible-data-with-the-data-*-attributes>HTML5 custom attribute</a> way and through <code>props</code> supported by Vue.js.</p><h3 id=1-html5-custom-attribute>1. HTML5 custom attribute</h3><p>What we need to do is when our backend return rendered html root, we will insert the data as custom attribute.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-html data-lang=html>// from any backend, syntax might different according to template engines
+&lt;<span style=color:#f92672>div</span> <span style=color:#a6e22e>id</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#39;commentList&#39;</span> <span style=color:#a6e22e>data-comments</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#39;&lt;% $commentsFromServer %&gt;&#39;</span>&gt;
+... other components here
+&lt;/<span style=color:#f92672>div</span>&gt;
+</code></pre></div><p>Here is how you do it in PHP.</p><pre><code>// example in PHP
+// assume $comments is an array
+&lt;div id=&quot;commentList&quot; data-comments='&lt;?php echo json_encode($commentsFromServer, JSON_HEX_APOS); ?&gt;'&gt;
+... other components here
+&lt;/div&gt;
+</code></pre><p>Here #commentList div is our Vue.js root component.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Vue</span>({
+  <span style=color:#a6e22e>el</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;#commentList&#39;</span>
+
+  <span style=color:#a6e22e>created</span>() {
+    <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>comments</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>$el</span>.<span style=color:#a6e22e>dataset</span>.<span style=color:#a6e22e>comments</span>  
+  }
+}
+</code></pre></div><p>And we save one http request =).</p><h3 id=2-vuejs-props>2. Vue.js props</h3><p>The second approach is same but it use the <a href=http://vuejs.org/guide/components.html#Props>props</a>. That&rsquo;s if you are not writing Vue.js application by breaking down into component you should use the first approach.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#a6e22e>Vue</span>.<span style=color:#a6e22e>component</span>(<span style=color:#e6db74>&#39;commentsList&#39;</span>, {
+ <span style=color:#a6e22e>props</span><span style=color:#f92672>:</span> [<span style=color:#e6db74>&#39;comments&#39;</span>]  <span style=color:#75715e>// important !!!
+</span><span style=color:#75715e></span> <span style=color:#a6e22e>template</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;&lt;div v-for=&#34;comment in comments&#34;&gt; ... &lt;/div&gt;&#39;</span>
+});
+
+<span style=color:#75715e>// initialize
+</span><span style=color:#75715e></span><span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Vue</span>({
+  <span style=color:#a6e22e>el</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;#commentList&#39;</span>
+}
+</code></pre></div><p>Instead of injecting our data into the root this time we can inject directly.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-html data-lang=html>&lt;<span style=color:#f92672>div</span> <span style=color:#a6e22e>id</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#34;commentList&#34;</span>&gt;
+  &lt;<span style=color:#f92672>comments-list</span> <span style=color:#a6e22e>:comments</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#39;&lt;% $commentsFromServer %&gt;&#39;</span>&gt;&lt;/<span style=color:#f92672>comments-list</span>&gt;
+&lt;/<span style=color:#f92672>div</span>&gt;
+</code></pre></div><h3 id=recap>Recap</h3><p>Initialized our data for js application through server side instead of ajax call make our app rendered faster so we can deliver our application to user asap. We discussed 2 approach to do this in Vue.js.
+Both are fine but I recommend the second way, which let you to write application by composing component</p></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

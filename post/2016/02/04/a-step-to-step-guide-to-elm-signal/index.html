@@ -1,0 +1,268 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>A Step to Step Guide to Elm Signal |</title><meta name=description content="Let's admit it ! Signal in Elm is difficult(at least for me). Here is what I get after digging for a few day."><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2016/02/04/a-step-to-step-guide-to-elm-signal/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>A Step to Step Guide to Elm Signal</h1><div class=post-metadata><time datetime=2016-02-04T00:00:00Z>February 04, 2016</time> &nbsp;
+<i class="far fa-clock"></i>
+12 min
+1 second
+&nbsp;
+<i class="fas fa-folder"></i>
+<a href=/categories/elm>Elm</a>
+&nbsp;
+<a href=/categories/signal>Signal</a>
+&nbsp;</div></header><div class=post-text><p>When I first start to learn Elm, I failed to understand Elm Signal. Luckily there is a <a href=https://github.com/evancz/start-app>start-app</a> which wrap up Signal so that I don&rsquo;t have to understant it to start playing with Elm. However, I like to understand how the tool I use work so I decided to spend time on it.</p><p>From the <a href=http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Signal>Elm documentation</a>,</p><blockquote><p>A signal is a value that changes over time</p></blockquote><p>In Elm, anything that changes over time can be Signal including time itself(chill, will explain later). Common signals you&rsquo;ll see are mostly from user inputs. For instance mouse position, mouse click, keyboard inputs.</p><p>This is the skeleton code we&rsquo;ll use along this tutorial.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#f92672>import </span><span style=color:#a6e22e>Graphics.Element</span> exposing <span style=color:#a6e22e>(..)</span>
+
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    show <span style=color:#e6db74>&#34;Signal&#34;</span>
+</code></pre></div><p>This should display the word &ldquo;Signal&rdquo; on screen.
+If you don&rsquo;t have an environment to run Elm, the <a href=http://elm-lang.org/try>online editor</a> is for you.
+Let&rsquo;s start by looking at a few basic signal provided by Elm.</p><h2 id=common-signals>Common Signals</h2><h3 id=mouse-signal>Mouse signal</h3><p>When user is moving their mouse, mouse position changes. So mouse position changes, it&rsquo;s a signal !!! We can visualize it:</p><pre><code>Mouse.position : (0,0)-----(5,15)----(230, 300)---&gt;
+</code></pre><p>where -> is time axis. Notice that the value returned by signal varies for each method. In this case Mouse.position gives us a tuple which contains position of x and y. Because signal changes overtime so if you try to add code:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#f92672>import </span><span style=color:#a6e22e>Mouse</span>
+
+<span style=color:#75715e>-- skip</span>
+
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    show <span style=color:#66d9ef>Mouse</span><span style=color:#a6e22e>.</span>position
+</code></pre></div><p>you&rsquo;ll get an <strong>TYPE MISMATCH</strong> error. Here is what happen</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plain data-lang=plain>Mouse.position : ----------(0,0)-----(5,15)----(230, 300)---&gt;
+                    show
+Element        : &lt;signal&gt;-----------------------------------&gt;
+</code></pre></div><p>The function <code>show</code> is used to display type <code>Element</code>. If you want to display signal we have to convert all signal into type <code>Signal Element</code>.</p><pre><code>Mouse.position : ----------(0,0)-----(5,15)----(230, 300)---&gt;
+                                     show
+Signal Element : ----------&lt;0,0&gt;-----&lt;5,15&gt;----&lt;230, 300&gt;---&gt;
+</code></pre><p>where <code>&lt;x,y></code> represent value with type <code>Element</code>. We need a function to map both of them. Did I just say map? What a coincidence ! Elm Signal librarya also has a <a href=http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Signal#map><code>map</code></a> function.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>map <span style=color:#a6e22e>:</span> (a <span style=color:#a6e22e>-&gt;</span> result) <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Signal</span> a <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Signal</span> result
+</code></pre></div><p>Seems legit.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#f92672>import </span><span style=color:#a6e22e>Mouse</span>
+
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map show <span style=color:#66d9ef>Mouse</span><span style=color:#a6e22e>.</span>position
+</code></pre></div><p>Tada ! You&rsquo;ll see a tuple showing x and y position of mouse. The values change when mouse is moving. Note that the type annotation of <code>main</code> function was updated from <code>Element</code> -> <code>Signal Element</code> because it&rsquo;s now an <code>Element</code> which changes over time.</p><h3 id=time-signal>Time signal</h3><p>So I did told you time itself is a signal in Elm. Let&rsquo;s prove that I am not a liar.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#f92672>import </span><span style=color:#a6e22e>Time</span>
+
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map show (<span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>every <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>second)
+</code></pre></div><p><code>Time.every</code> takes an argument - <code>t</code> which represent the interval and gives us a signal which representing current time. In our example, we update our time for every second. Try to substitute <code>Time.second</code> with <code>Time.millisecond</code> to see aggressive update.</p><p>See, I told you time itself changes over time so it&rsquo;s a signal !</p><h3 id=keyboard-signal>Keyboard signal</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#f92672>import </span><span style=color:#a6e22e>Keyboard</span>
+
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map show <span style=color:#66d9ef>Keyboard</span><span style=color:#a6e22e>.</span>presses
+</code></pre></div><p>You&rsquo;ll notice the value changes when you press your keyboard. Since the return value is <code>Keycode</code> we can convert it using <code>Char.fromCode</code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#f92672>import </span><span style=color:#a6e22e>Char</span>
+
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map show (<span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map <span style=color:#66d9ef>Char</span><span style=color:#a6e22e>.</span>fromCode <span style=color:#66d9ef>Keyboard</span><span style=color:#a6e22e>.</span>presses)
+</code></pre></div><p>This is how it looks like:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plain data-lang=plain>Signal Keyboard.presses : ---121-------97---------100---------48----&gt;
+                                        Char.fromCode
+Signal Char             : ----y---------a-----------d---------0-----&gt;
+                                            show
+Signal Element          : --&lt;&#39;y&#39;&gt;-----&lt;&#39;a&#39;&gt;-------&lt;&#39;d&#39;&gt;-----&lt;&#39;0&#39;&gt;---&gt;
+</code></pre></div><p>First we have to transform KeyCode to it&rsquo;s correspoding value using <code>Char.fromCode</code>. Because the KeyCode will keep updating, so we have to make sure we are transforming it into another Signal, by using another <code>Signal.map</code>.</p><p>Start to love <code>Signal.map</code> ?</p><p>Here you probably grabbed the concept of Signal and know how to display it on browser using <code>Signal.map</code>. Great ! Let&rsquo;s look at another basic signal.</p><h3 id=window-signal>Window signal</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#f92672>import </span><span style=color:#a6e22e>Window</span>
+
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map show (<span style=color:#66d9ef>Window</span><span style=color:#a6e22e>.</span>dimensions)
+</code></pre></div><p>Resize your browser to see changes.</p><p>Our examples so far only show how to work with a single signal. What if there are multiple signals at the same time? Imagine that we are displaying our time signal.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map show (<span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>every <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>second)
+</code></pre></div><p>And we want to always display it on center on window
+Let&rsquo;s create a view function. We can utilize <a href=http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Graphics-Element#container><code>container</code></a> function provided by <code>Graphics.Element</code> library:</p><p>From the documentation:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>container <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Int</span> <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Int</span> <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Position</span> <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Element</span> <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#75715e>-- To center element exactly in a 300-by-300 square you would say:</span>
+container <span style=color:#ae81ff>300</span> <span style=color:#ae81ff>300</span> middle element
+</code></pre></div><p>We also need some function from <code>Text</code> library to make our font looks bigger so we will import that:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#f92672>import </span><span style=color:#a6e22e>Text</span>
+
+view <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Float</span> <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Element</span>
+view time <span style=color:#a6e22e>=</span>
+    toString time
+      <span style=color:#a6e22e>|&gt;</span> <span style=color:#66d9ef>Text</span><span style=color:#a6e22e>.</span>fromString
+      <span style=color:#a6e22e>|&gt;</span> <span style=color:#66d9ef>Text</span><span style=color:#a6e22e>.</span>height <span style=color:#ae81ff>50</span>
+      <span style=color:#a6e22e>|&gt;</span> centered
+      <span style=color:#a6e22e>|&gt;</span> container <span style=color:#ae81ff>600</span> <span style=color:#ae81ff>600</span> middle
+
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map view (<span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>every <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>second)
+</code></pre></div><p>If you are not familiar with the <code>|></code> symbol, it&rsquo;s just a nicer way to chain function. Without using <code>|></code> our view function will be like:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>view time <span style=color:#a6e22e>=</span>
+    container <span style=color:#ae81ff>600</span> <span style=color:#ae81ff>600</span> middle (centered (<span style=color:#66d9ef>Text</span><span style=color:#a6e22e>.</span>height <span style=color:#ae81ff>50</span> (<span style=color:#66d9ef>Text</span><span style=color:#a6e22e>.</span>fromString (toString time)))))
+</code></pre></div><p>Yucks&mldr; So do you now start to love <code>|></code> more than <code>Signal.map</code> ?</p><p>This should display a 50px Unix Time in a container with 600x600px on screen but as we know because we hardcoded the container width and height so it will not display on the center always.
+If you remember, our <code>Window.dimensions</code> return a tuple which contain window width and height. Since we always want to display our text on center on window, it has to <strong>change</strong> depends on window size. So it has to be a Signal !!!</p><p>So now our view function will take 2 arguments: one is the position of window to figure out the size of its own container and another one is the value of timestamp to display.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>view <span style=color:#a6e22e>:</span> (<span style=color:#66d9ef>Int</span>, <span style=color:#66d9ef>Int</span>) <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Float</span> <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Element</span>
+view (w, h) time <span style=color:#a6e22e>=</span>
+    toString time
+      <span style=color:#a6e22e>|&gt;</span> <span style=color:#66d9ef>Text</span><span style=color:#a6e22e>.</span>fromString
+      <span style=color:#a6e22e>|&gt;</span> <span style=color:#66d9ef>Text</span><span style=color:#a6e22e>.</span>height <span style=color:#ae81ff>50</span>
+      <span style=color:#a6e22e>|&gt;</span> centered
+      <span style=color:#a6e22e>|&gt;</span> container w h middle
+</code></pre></div><p>Here&rsquo;s how it looks like:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plain data-lang=plain>Window.dimensions      : -(10,20)---------------(400,200)---------------&gt;
+
+Time.every Time.second : -------1-------2-------3-------4-------5-------&gt;
+
+view                   : ------&lt;1&gt;-----&lt;2&gt;-----&lt;3&gt;-----&lt;4&gt;-----&lt;5&gt;------&gt;
+              (position)      (5,10)  (5,10)  (5,10) (200,100) (200,100)
+</code></pre></div><p>We need to map 2 signals, enter <code>Signal.map2</code>:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>map<span style=color:#ae81ff>2</span>
+    <span style=color:#a6e22e>:</span>  (a <span style=color:#a6e22e>-&gt;</span> b <span style=color:#a6e22e>-&gt;</span> result)  <span style=color:#75715e>-- this is our new view function</span>
+    <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Signal</span> a            <span style=color:#75715e>-- Window.dimensions signal</span>
+    <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Signal</span> b            <span style=color:#75715e>-- Time signal</span>
+    <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Signal</span> result
+</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#66d9ef>main </span><span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map<span style=color:#ae81ff>2</span> view <span style=color:#66d9ef>Window</span><span style=color:#a6e22e>.</span>dimensions (<span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>every <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>second)
+</code></pre></div><p>Note that our main function type annotation is still <code>Signal Element</code>. We now have a pretty timer display on the center of browser. Try to resize browser and see it&rsquo;s in center.</p><p>If you have more than 2 signals to map, you can always go up with <code>Signal.map3</code>, <code>Signal.map4</code> until <code>Signal.map5</code>. Why the maximum 5? Seriously why don&rsquo;t you ask <a href=https://twitter.com/czaplic>Evan</a>.</p><p>If you are following up, code should look like this:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#f92672>import </span><span style=color:#a6e22e>Graphics.Element</span> exposing <span style=color:#a6e22e>(..)</span>
+<span style=color:#f92672>import </span><span style=color:#a6e22e>Text</span>
+<span style=color:#f92672>import </span><span style=color:#a6e22e>Window</span>
+<span style=color:#f92672>import </span><span style=color:#a6e22e>Time</span>
+
+view <span style=color:#a6e22e>:</span> (<span style=color:#66d9ef>Int</span>, <span style=color:#66d9ef>Int</span>) <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Float</span> <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Element</span>
+view (w, h) time <span style=color:#a6e22e>=</span>
+    toString time
+      <span style=color:#a6e22e>|&gt;</span> <span style=color:#66d9ef>Text</span><span style=color:#a6e22e>.</span>fromString
+      <span style=color:#a6e22e>|&gt;</span> <span style=color:#66d9ef>Text</span><span style=color:#a6e22e>.</span>height (toFloat w <span style=color:#a6e22e>*</span> <span style=color:#ae81ff>0.</span><span style=color:#ae81ff>1</span>)
+      <span style=color:#a6e22e>|&gt;</span> centered
+      <span style=color:#a6e22e>|&gt;</span> container w h middle
+
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map<span style=color:#ae81ff>2</span> view <span style=color:#66d9ef>Window</span><span style=color:#a6e22e>.</span>dimensions (<span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>every <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>second)
+</code></pre></div><h2 id=foldp>Foldp</h2><p>Oops&mldr;. something happened in the middle of an NBA game.</p><p><img src=https://cldup.com/vdkJ2GayBK.png alt></p><p>Apparently, the 24 seconds shot clock doesn&rsquo;t work. Crowds are frustrating and the engineers have no idea what happened. So to be a hero for everyone, let&rsquo;s us create a 24 seconds shot clock quickly. Here is what a shot clock do:</p><ul><li>count down every second (duh it&rsquo;s a countdown timer)</li><li>increase one second when up arrow key is pressed</li><li>decrease one second when down arrow key is pressed</li><li>reset to 24 seconds when space bar is pressed</li></ul><p>So far we had display signal on browser using incoming signal and we do not bother it after that. To create a shot clock we need some place to store our current value. Or simpler where should we store the initial 24? In this case 24 is a state. It will change to 23 in the next second, then 22, 21&mldr;</p><p>Let&rsquo;s see how we can store state in ELlm. Because Elm data structures are immutable and all functions are stateless, we cannot hold a state as in lanugage like JavaScript:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>; <span style=color:#75715e>// our state
+</span><span style=color:#75715e></span><span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>2</span>;     <span style=color:#75715e>// change state
+</span><span style=color:#75715e></span><span style=color:#a6e22e>a</span>;         <span style=color:#75715e>// state changes
+</span></code></pre></div><p>In Elm, to store a state, we create another signal to keep track of current value. Here is how we store the number of clicks.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plain data-lang=plain>Signal Mouse.clicks: --()-----()----()-----|-&gt;
+
+Signal Int:          ---1------2-----3-----|-&gt;
+</code></pre></div><p>We store signal by using <code>Signal.foldp</code>. The &ldquo;p&rdquo; in &ldquo;foldp&rdquo; means pass. In <a href=https://docs.python.org/2/library/functions.html#reduce>most</a> <a href=http://ruby-doc.org/core-2.1.0/Enumerable.html#method-i-reduce>programming</a> <a href=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce>language</a> this is known as reduce function.</p><p>Definition of <a href=http://package.elm-lang.org/packages/elm-lang/core/3.0.0/Signal#foldp><code>Signal.foldp</code></a></p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>foldp
+    <span style=color:#a6e22e>:</span>  (a <span style=color:#a6e22e>-&gt;</span> state <span style=color:#a6e22e>-&gt;</span> state)
+    <span style=color:#a6e22e>-&gt;</span> state
+    <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Signal</span> a
+    <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Signal</span> state
+</code></pre></div><p>Let&rsquo;s start small. We will display our 24 seconds and make it 23,22,21&mldr;.</p><p><code>Signal.foldp</code> takes 3 elements:</p><ol><li>update function - sounds like a right place to minus 1</li><li>initial value - of course 24 !</li><li>incoming signal - I guess our familiar <code>Time.every Time.second</code> ?</li></ol><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>time <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span><span style=color:#66d9ef>Time</span>
+time <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>every <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>second
+
+clock <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Int</span>
+clock <span style=color:#a6e22e>=</span>
+  <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>foldp update <span style=color:#ae81ff>24</span> time
+
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map<span style=color:#ae81ff>2</span> view <span style=color:#66d9ef>Window</span><span style=color:#a6e22e>.</span>dimensions clock
+</code></pre></div><p>Notice that you have to update type annotation of <code>view</code>:</p><pre><code>view : (Int, Int) -&gt; Int -&gt; Element
+</code></pre><p>Our update function will receive 2 arguments, value from our function <code>time</code> and the accumulated value which represent current state. We won&rsquo;t use the first argument so we will just replace it as <code>_</code>:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>update _ counter <span style=color:#a6e22e>=</span>
+    counter <span style=color:#a6e22e>-</span> <span style=color:#ae81ff>1</span>
+</code></pre></div><p>Here is what it looks like</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plain data-lang=plain>                     Time.every Time.second
+Signal Time.Time: -----1-----2-----3-------|-&gt;
+
+            clock = Signal.foldp update 24 time
+
+Signal Int:       24---23----22----21-----|-&gt;
+</code></pre></div><p>Oh yeah !!! It&rsquo;s counting ~ But it won&rsquo;t stop. Let&rsquo;s change our code:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>update _ counter <span style=color:#a6e22e>=</span>
+    max <span style=color:#ae81ff>0</span> (counter <span style=color:#a6e22e>-</span> <span style=color:#ae81ff>1</span>)
+</code></pre></div><p>Now it stops at 0.</p><h2 id=action>Action</h2><p>Let&rsquo;s us try implementing another feature. We want to adjust the clock by pressing up and down arrows.</p><p>Now beside the <code>Time.Time</code> signal, we also have to listen to the <code>Keyboard.Signal</code>. As we have to deal with more and more signal, our code won&rsquo;t scale well. Look at our <code>update</code> function, it&rsquo;s ignoring the first argument and only know to do one thing. Isn&rsquo;t it would be great if each signal can let <code>update</code> knows what to do. Then <code>update</code> can respond according to it and do the correct thing. In Elm, we call this as <code>Action</code>.</p><p>We currently have one action, that is ticking the clock every second, let&rsquo;s just name it <strong>Tick</strong>. Also it&rsquo;s useful to have a <strong>NoOp</strong> action which do nothing.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#66d9ef>type</span> <span style=color:#66d9ef>Action</span> <span style=color:#a6e22e>=</span> <span style=color:#66d9ef>Tick</span> <span style=color:#a6e22e>|</span> <span style=color:#66d9ef>NoOp</span>
+</code></pre></div><p>Remember our time function?</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>time <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>every <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>second
+</code></pre></div><p>Instead of returning <code>Signal Time.Time</code> , we want it to return a <code>Signal Action</code>. That&rsquo;s where our old friend <code>Signal.map</code> comes in.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>time <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Action</span>
+time <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map (always <span style=color:#66d9ef>Tick</span>) (<span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>every <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>second)
+</code></pre></div><p><code>always</code> is a handy function when you need to return the same value everytime a function is called. Here we return the action <strong>Tick</strong> every second.</p><p>So now our <code>update</code> function first argument will be an Action.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>update action counter <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>case</span> action <span style=color:#66d9ef>of</span>
+        <span style=color:#66d9ef>Tick</span> <span style=color:#a6e22e>-&gt;</span> max <span style=color:#ae81ff>0</span> (counter <span style=color:#a6e22e>-</span> <span style=color:#ae81ff>1</span>)
+        <span style=color:#66d9ef>NoOp</span> <span style=color:#a6e22e>-&gt;</span> counter
+</code></pre></div><p>So now, our signal looks like this. Now we are feeding the <code>update</code> function with Signal Action.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-plain data-lang=plain>                            time
+Signal Action:  -----Tick-----Tick-----Tick-------|-&gt;
+                            update
+Signal Int:     24----23-------22-------21--------|-&gt;
+                            show
+Signal Element:&lt;24&gt;--&lt;23&gt;-----&lt;22&gt;-----&lt;21&gt;-------|-&gt;
+</code></pre></div><p>Now it seems like our <code>update</code> function can response to many cases. Even the users input ! We know that we&rsquo;ll have 2 new type of action, that&rsquo;s <code>Increase</code> and <code>Decrease</code> to adjust the time.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#66d9ef>type</span> <span style=color:#66d9ef>Action</span> <span style=color:#a6e22e>=</span> <span style=color:#66d9ef>Tick</span> <span style=color:#a6e22e>|</span> <span style=color:#66d9ef>NoOp</span> <span style=color:#a6e22e>|</span> <span style=color:#66d9ef>Increase</span> <span style=color:#a6e22e>|</span> <span style=color:#66d9ef>Decrease</span>
+
+update action counter <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>case</span> action <span style=color:#66d9ef>of</span>
+        <span style=color:#66d9ef>Increase</span> <span style=color:#a6e22e>-&gt;</span> counter <span style=color:#a6e22e>+</span> <span style=color:#ae81ff>1</span>
+        <span style=color:#66d9ef>Decrease</span> <span style=color:#a6e22e>-&gt;</span> max <span style=color:#ae81ff>0</span> (counter <span style=color:#a6e22e>-</span> <span style=color:#ae81ff>1</span>)
+        <span style=color:#66d9ef>Tick</span>     <span style=color:#a6e22e>-&gt;</span> max <span style=color:#ae81ff>0</span> (counter <span style=color:#a6e22e>-</span> <span style=color:#ae81ff>1</span>)
+        <span style=color:#66d9ef>NoOp</span>     <span style=color:#a6e22e>-&gt;</span> counter
+</code></pre></div><p>The function used by action <strong>Decrease</strong> and <strong>Tick</strong> should be the same. While for <strong>Increase</strong>, we just at 1 to the counter.</p><blockquote><p>protip : always design your Elm app by first figuring out Action</p></blockquote><p>Ok, so now when the up arrow key is pressed we want to tell update that it is a <strong>Increase</strong>, when the down key is pressed it&rsquo;s a <strong>Decrease</strong>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#f92672>import </span><span style=color:#a6e22e>Keyboard</span>
+
+<span style=color:#75715e>--</span>
+
+input <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Action</span>
+input <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>let</span>
+        upDown <span style=color:#a6e22e>=</span> <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map <span style=color:#a6e22e>.</span>y <span style=color:#66d9ef>Keyboard</span><span style=color:#a6e22e>.</span>arrows
+        toAction y <span style=color:#a6e22e>=</span>
+            <span style=color:#66d9ef>if</span> y <span style=color:#a6e22e>==</span> <span style=color:#ae81ff>1</span> <span style=color:#66d9ef>then</span> <span style=color:#66d9ef>Increase</span>
+            <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>if</span> y <span style=color:#a6e22e>==</span> <span style=color:#a6e22e>-</span><span style=color:#ae81ff>1</span> <span style=color:#66d9ef>then</span> <span style=color:#66d9ef>Decrease</span>
+            <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>NoOp</span>
+    <span style=color:#66d9ef>in</span>
+        <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map toAction upDown
+</code></pre></div><p>We also explicitly say that if nothing is pressed, we will return <strong>NoOp</strong> action. So we have got everything get ready. Let&rsquo;s again look at our <code>clock</code> function.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>clock <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Int</span>
+clock <span style=color:#a6e22e>=</span>
+  <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>foldp update <span style=color:#ae81ff>24</span> time
+</code></pre></div><p>We know that our new bro - the function <code>input</code> will let us know whether it&rsquo;s <code>Increase</code> or <code>Decrease</code> at the right time. But how does it merge into our old bro <code>time</code>. We don&rsquo;t want to throw away <code>time</code>, because it&rsquo;s not loyal(ok the app won&rsquo;t work). So let&rsquo;s merge them !!!</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>actions <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Action</span>
+actions <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>merge time input
+</code></pre></div><p>We call the function to merge signal <code>actions</code>. Notice that because the type and input are the same(<code>Signal Action</code>) so we won&rsquo;t have to worry about having problem merging. That&rsquo;s the beauty of type annotations !</p><p>We also need to update our <code>clock</code> function.</p><pre><code>```elm
+clock : Signal Int
+clock =
+  Signal.foldp update 24 actions
+</code></pre><p>And if you are following up our code should now looks like this:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#f92672>import </span><span style=color:#a6e22e>Graphics.Element</span> exposing <span style=color:#a6e22e>(..)</span>
+<span style=color:#f92672>import </span><span style=color:#a6e22e>Text</span>
+<span style=color:#f92672>import </span><span style=color:#a6e22e>Window</span>
+<span style=color:#f92672>import </span><span style=color:#a6e22e>Time</span>
+<span style=color:#f92672>import </span><span style=color:#a6e22e>Keyboard</span>
+
+<span style=color:#66d9ef>type</span> <span style=color:#66d9ef>Action</span> <span style=color:#a6e22e>=</span> <span style=color:#66d9ef>Tick</span> <span style=color:#a6e22e>|</span> <span style=color:#66d9ef>NoOp</span> <span style=color:#a6e22e>|</span> <span style=color:#66d9ef>Increase</span> <span style=color:#a6e22e>|</span> <span style=color:#66d9ef>Decrease</span>
+
+update action counter <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>case</span> action <span style=color:#66d9ef>of</span>
+        <span style=color:#66d9ef>Increase</span> <span style=color:#a6e22e>-&gt;</span> counter <span style=color:#a6e22e>+</span> <span style=color:#ae81ff>1</span>
+        <span style=color:#66d9ef>Decrease</span> <span style=color:#a6e22e>-&gt;</span> max <span style=color:#ae81ff>0</span> (counter <span style=color:#a6e22e>-</span> <span style=color:#ae81ff>1</span>)
+        <span style=color:#66d9ef>Tick</span>     <span style=color:#a6e22e>-&gt;</span> max <span style=color:#ae81ff>0</span> (counter <span style=color:#a6e22e>-</span> <span style=color:#ae81ff>1</span>)
+        <span style=color:#66d9ef>NoOp</span>     <span style=color:#a6e22e>-&gt;</span> counter
+
+view <span style=color:#a6e22e>:</span> (<span style=color:#66d9ef>Int</span>, <span style=color:#66d9ef>Int</span>) <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Int</span> <span style=color:#a6e22e>-&gt;</span> <span style=color:#66d9ef>Element</span>
+view (w, h) time <span style=color:#a6e22e>=</span>
+    toString time
+      <span style=color:#a6e22e>|&gt;</span> <span style=color:#66d9ef>Text</span><span style=color:#a6e22e>.</span>fromString
+      <span style=color:#a6e22e>|&gt;</span> <span style=color:#66d9ef>Text</span><span style=color:#a6e22e>.</span>height (toFloat w <span style=color:#a6e22e>*</span> <span style=color:#ae81ff>0.</span><span style=color:#ae81ff>1</span>)
+      <span style=color:#a6e22e>|&gt;</span> centered
+      <span style=color:#a6e22e>|&gt;</span> container w h middle
+
+input <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Action</span>
+input <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>let</span>
+        upDown <span style=color:#a6e22e>=</span> <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map <span style=color:#a6e22e>.</span>y <span style=color:#66d9ef>Keyboard</span><span style=color:#a6e22e>.</span>arrows
+        toAction y <span style=color:#a6e22e>=</span>
+            <span style=color:#66d9ef>if</span> y <span style=color:#a6e22e>==</span> <span style=color:#ae81ff>1</span> <span style=color:#66d9ef>then</span> <span style=color:#66d9ef>Increase</span>
+            <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>if</span> y <span style=color:#a6e22e>==</span> <span style=color:#a6e22e>-</span><span style=color:#ae81ff>1</span> <span style=color:#66d9ef>then</span> <span style=color:#66d9ef>Decrease</span>
+            <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>NoOp</span>
+    <span style=color:#66d9ef>in</span>
+        <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map toAction upDown
+
+time <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Action</span>
+time <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map (always <span style=color:#66d9ef>Tick</span>) (<span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>every <span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>second)
+
+action <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Action</span>
+action <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>merge time input
+
+clock <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Int</span>
+clock <span style=color:#a6e22e>=</span>
+  <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>foldp update <span style=color:#ae81ff>24</span> action
+
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Element</span>
+<span style=color:#66d9ef>main </span><span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map<span style=color:#ae81ff>2</span> view <span style=color:#66d9ef>Window</span><span style=color:#a6e22e>.</span>dimensions clock
+</code></pre></div><p>Nice ! The clock is working and we can adjust it by using our arrow keys. Notice that we have to release the key again to repeat the action, either increasing or decreasing the clock. We can use <code>Signal.sampleOn</code> to make greater user experience. <code>Signal.sampleOn</code> takes 2 signal which the first signal acts as trigger to the second signal. That means if the first signal never fire, neither nor the second signal will.</p><p>In our case, we want to fire <code>Keyboard.arrow</code> without waiting for the release，and the <code>Time.fps</code> is for us :</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>sampleOn (<span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>fps <span style=color:#ae81ff>30</span>) <span style=color:#66d9ef>Keyboard</span><span style=color:#a6e22e>.</span>arrows
+</code></pre></div><p>If we update our <code>input function</code>:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm>input <span style=color:#a6e22e>:</span> <span style=color:#66d9ef>Signal</span> <span style=color:#66d9ef>Action</span>
+input <span style=color:#a6e22e>=</span>
+    <span style=color:#66d9ef>let</span>
+        upDown <span style=color:#a6e22e>=</span> <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map <span style=color:#a6e22e>.</span>y <span style=color:#66d9ef>Keyboard</span><span style=color:#a6e22e>.</span>arrows
+        toAction y <span style=color:#a6e22e>=</span>
+            <span style=color:#66d9ef>if</span> y <span style=color:#a6e22e>==</span> <span style=color:#ae81ff>1</span> <span style=color:#66d9ef>then</span> <span style=color:#66d9ef>Increase</span>
+            <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>if</span> y <span style=color:#a6e22e>==</span> <span style=color:#a6e22e>-</span><span style=color:#ae81ff>1</span> <span style=color:#66d9ef>then</span> <span style=color:#66d9ef>Decrease</span>
+            <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>NoOp</span>
+        action <span style=color:#a6e22e>=</span> <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>map toAction upDown
+    <span style=color:#66d9ef>in</span>
+        <span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>sampleOn (<span style=color:#66d9ef>Time</span><span style=color:#a6e22e>.</span>fps <span style=color:#ae81ff>30</span>) action
+</code></pre></div><p>We can boost up quickly to the number we want:</p><p><img src=https://cldup.com/Cr0ib2UWwi.gif alt></p><p>But there is a feature which is still missing - when we press spacebar we want it to reset to 24 second. I&rsquo;ll leave that to you by throwing a few tips:</p><ul><li>Start with action</li><li><code>Keyboard.space</code> let us handle space key easily</li><li><code>Signal.merge</code> merges 2 signals, if we want to merge more we have to use <code>Signal.mergeMany</code> which takes a list of signal.</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-elm data-lang=elm><span style=color:#66d9ef>Signal</span><span style=color:#a6e22e>.</span>mergeMany [time, input, spaceBar]
+</code></pre></div><h2 id=recap>Recap</h2><p>Understanding Signal is probably one of the most fun thing in Elm, isn&rsquo;t it? As seen above, <code>Signal.foldp</code> handles all state in a place, so that we can eliminate local state and write pure function. Indeed if you know Redux, it&rsquo;s actually inspired by Elm. You can read more about it at <a href=http://elm-lang.org/guide/reactivity>the doc</a>.</p><p>ps: Here is <a href=http://share-elm.com/sprout/56b2d5eae4b070fd20da98bd>my final answer</a>.</p></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

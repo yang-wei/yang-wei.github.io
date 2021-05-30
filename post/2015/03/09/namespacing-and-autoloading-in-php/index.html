@@ -1,0 +1,125 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Namespacing and Autoloading in Php |</title><meta name=description content="namespacing and autoloading by composer"><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2015/03/09/namespacing-and-autoloading-in-php/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Namespacing and Autoloading in Php</h1><div class=post-metadata><time datetime=2015-03-09T00:00:00Z>March 09, 2015</time> &nbsp;
+<i class="far fa-clock"></i>
+2 min
+33 s
+&nbsp;
+<i class="fas fa-folder"></i>
+<a href=/categories/namespace>namespace</a>
+&nbsp;
+<a href=/categories/composer-autoloading>composer autoloading</a>
+&nbsp;
+<a href=/categories/php>PHP</a>
+&nbsp;
+<a href=/categories/oop>oop</a>
+&nbsp;</div></header><div class=post-text><p>Recently, I have to revisit PHP because of a new project and I realized that <code>namespace</code> is totally new for me. So I thought it&rsquo;ll be good to write down a quick note. This post will go quickly on how namespacing and autoloading work in PHP by using Composer.</p><p>###Our Application
+Our application is just a simple page echoing some text using <code>json_encode</code> method.
+Let&rsquo;s create a <code>index.php</code> and write all our codes inside.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=color:#f92672>&lt;?</span><span style=color:#a6e22e>php</span>
+
+<span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Team</span> {
+  <span style=color:#66d9ef>protected</span> $members <span style=color:#f92672>=</span> [];
+  <span style=color:#66d9ef>public</span> $name;
+
+  <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>function</span> __construct($name, $members <span style=color:#f92672>=</span> [])
+  {
+    $this<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>name</span> <span style=color:#f92672>=</span> $name;
+    $this<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>members</span> <span style=color:#f92672>=</span> $members;
+  }
+
+  <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>function</span> <span style=color:#a6e22e>add</span>(<span style=color:#a6e22e>Person</span> $person)
+  {
+    $this<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>members</span>[] <span style=color:#f92672>=</span> $person;
+  }
+
+  <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>function</span> <span style=color:#a6e22e>members</span>()
+  {
+    <span style=color:#66d9ef>return</span> $this<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>members</span>;
+  }
+}
+
+<span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Person</span> {
+
+  <span style=color:#66d9ef>public</span> $name, $role;
+
+  <span style=color:#66d9ef>public</span> <span style=color:#66d9ef>function</span> __construct($name, $role)
+  {
+    $this<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>name</span> <span style=color:#f92672>=</span> $name;
+    $this<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>role</span> <span style=color:#f92672>=</span> $role;
+  }
+}
+
+$kobebryant <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Person</span>(<span style=color:#e6db74>&#39;Kobe Bryant&#39;</span>, <span style=color:#e6db74>&#39;player&#39;</span>);
+$Lakers <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Team</span>(<span style=color:#e6db74>&#39;Lakers&#39;</span>, [$kobebryant] );
+
+<span style=color:#75715e>// add player and coach
+</span><span style=color:#75715e></span>$jeremylin <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Person</span>(<span style=color:#e6db74>&#39;Jeremy Lin&#39;</span>, <span style=color:#e6db74>&#39;player&#39;</span>);
+$Lakers<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>add</span>($jeremylin);
+
+$byronscott <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Person</span>(<span style=color:#e6db74>&#39;Byron Scott&#39;</span>, <span style=color:#e6db74>&#39;coach&#39;</span>);
+$Lakers<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>add</span>($byronscott);
+
+<span style=color:#75715e>// output
+</span><span style=color:#75715e></span><span style=color:#66d9ef>echo</span>(<span style=color:#a6e22e>json_encode</span>($Lakers<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>members</span>()));
+</code></pre></div><p>If we execute this file (either start a server by <code>php -s localhost:8000</code> or <code>php index.php</code>), we will see an array with 3 objects inside.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js>[
+  {<span style=color:#e6db74>&#34;name&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;Kobe Bryant&#34;</span>,<span style=color:#e6db74>&#34;role&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;player&#34;</span>},
+  {<span style=color:#e6db74>&#34;name&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;Jeremy Lin&#34;</span>,<span style=color:#e6db74>&#34;role&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;player&#34;</span>},
+  {<span style=color:#e6db74>&#34;name&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;Byron Scott&#34;</span>,<span style=color:#e6db74>&#34;role&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;coach&#34;</span>}
+]
+</code></pre></div><p>Cool app right? Let&rsquo;s explore namespacing and composer autoloading by rewritting this app.</p><p>###Breaking Down Classes
+If we keep expanding our application, this <code>index.php</code> will become very large. This makes our code hard to read and maintain. So let&rsquo;s give each class their own files located inside <code>src/</code> directory.</p><pre><code>├── index.php
+└── src
+    ├── Person.php
+    └── Team.php
+</code></pre><p>PHP won&rsquo;t know the files inside <code>src/</code> directory if we do not tell it. There are a few methods to do so, one of them is we can use <code>require</code> method to load the needed files but there&rsquo;s a better way to solve this - <a href=https://getcomposer.org/>composer</a> autoloading. (I assume composer is installed on your system). First to initialize composer, all we need is <code>composer.json</code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>//composer.json
+</span><span style=color:#75715e></span>{}
+</code></pre></div><p>Put this on project root and run <code>composer install</code> will create a new directory - <code>vendor</code>. This is the place where composer stores our project autoload configuration and dependencies. To make use of composer autoload, we&rsquo;ll modify our <code>composer.json</code>.</p><pre><code>{
+  &quot;autoload&quot;: {
+    &quot;psr-4&quot;: {
+      &quot;NBA\\&quot;: &quot;src&quot;
+    }
+  }
+}
+</code></pre><p>Here, composer will register a <a href=http://www.php-fig.org/psr/psr-4/>PSR-4</a> autoloader for <em>NBA</em> namespace (can be any name related to our app). Now our new namespace is mapped to <code>src/</code> directory.</p><p>###Adding Namespaces</p><p>In our codes containing classes, let&rsquo;s give them their own namespace.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=color:#75715e>// src/Person.php
+</span><span style=color:#75715e></span><span style=color:#f92672>&lt;?</span><span style=color:#a6e22e>php</span>
+
+<span style=color:#66d9ef>namespace</span> <span style=color:#a6e22e>NBA\Person</span>
+<span style=color:#f92672>...</span>
+
+<span style=color:#75715e>// src/Team.php
+</span><span style=color:#75715e></span><span style=color:#f92672>&lt;?</span><span style=color:#a6e22e>php</span>
+
+<span style=color:#66d9ef>namespace</span> <span style=color:#a6e22e>NBA\Team</span>
+<span style=color:#f92672>...</span>
+</code></pre></div><p>Noticed in PHP, namespaces are required to named relatively to their paths. If <code>Person.php</code> is located inside <code>src/other/Person.php</code>, we do this:</p><pre><code>namespace NBA\other\Person
+</code></pre><h3 id=autoloading>Autoloading</h3><p>In our <code>index.php</code>, we need to load <code>autoload.php</code> provided from composer. Also to use the namespace we just declared, we use the keyword <code>use</code>.
+Let&rsquo;s break our <code>index.php</code> down to separate some concerns. Our application logic will be placed in <code>app.php</code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=color:#75715e>//index.php
+</span><span style=color:#75715e></span><span style=color:#66d9ef>require</span> <span style=color:#e6db74>&#39;vendor/autoload.php&#39;</span>;
+<span style=color:#66d9ef>require</span> <span style=color:#e6db74>&#39;app.php&#39;</span>;
+</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=color:#75715e>// app.php
+</span><span style=color:#75715e></span><span style=color:#f92672>&lt;?</span><span style=color:#a6e22e>php</span>
+
+<span style=color:#66d9ef>use</span> <span style=color:#a6e22e>NBA\Person</span>;
+<span style=color:#66d9ef>use</span> <span style=color:#a6e22e>NBA\Team</span>;
+
+$kobebryant <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Person</span>(<span style=color:#e6db74>&#39;Kobe Bryant&#39;</span>, <span style=color:#e6db74>&#39;player&#39;</span>);
+$Lakers <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Team</span>(<span style=color:#e6db74>&#39;Lakers&#39;</span>, [$kobebryant] );
+
+<span style=color:#75715e>// add player and coach
+</span><span style=color:#75715e></span>$jeremylin <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Person</span>(<span style=color:#e6db74>&#39;Jeremy Lin&#39;</span>, <span style=color:#e6db74>&#39;player&#39;</span>);
+$Lakers<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>add</span>($jeremylin);
+
+$byronscott <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Person</span>(<span style=color:#e6db74>&#39;Byron Scott&#39;</span>, <span style=color:#e6db74>&#39;coach&#39;</span>);
+$Lakers<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>add</span>($byronscott);
+
+<span style=color:#75715e>// output
+</span><span style=color:#75715e></span><span style=color:#66d9ef>echo</span>(<span style=color:#a6e22e>json_encode</span>($Lakers<span style=color:#f92672>-&gt;</span><span style=color:#a6e22e>members</span>()));
+</code></pre></div><p>By executing <code>php index.php</code>, we should get the same results.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js>[
+  {<span style=color:#e6db74>&#34;name&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;Kobe Bryant&#34;</span>,<span style=color:#e6db74>&#34;role&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;player&#34;</span>},
+  {<span style=color:#e6db74>&#34;name&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;Jeremy Lin&#34;</span>,<span style=color:#e6db74>&#34;role&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;player&#34;</span>},
+  {<span style=color:#e6db74>&#34;name&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;Byron Scott&#34;</span>,<span style=color:#e6db74>&#34;role&#34;</span><span style=color:#f92672>:</span><span style=color:#e6db74>&#34;coach&#34;</span>}
+]
+</code></pre></div><p>###Resources</p><ul><li><a href=https://getcomposer.org/doc/01-basic-usage.md>https://getcomposer.org/doc/01-basic-usage.md</a></li></ul></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

@@ -1,0 +1,86 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Clojure Thread First vs Thread Last Macros |</title><meta name=description content="Clojure thread first -> and thread last ->> explaination in detail."><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2015/11/18/clojure-thread-first-vs-thread-last-macros/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Clojure Thread First vs Thread Last Macros</h1><div class=post-metadata><time datetime=2015-11-18T00:00:00Z>November 18, 2015</time> &nbsp;
+<i class="far fa-clock"></i>
+4 min
+42 s
+&nbsp;
+<i class="fas fa-folder"></i>
+<a href=/categories/clojure>clojure</a>
+&nbsp;
+<a href=/categories/thread-first>thread-first</a>
+&nbsp;
+<a href=/categories/thread-last>thread-last</a>
+&nbsp;</div></header><div class=post-text><p>In this post, I am going to show you {when|how} to use Clojure marcos, <a href=https://clojuredocs.org/clojure.core/-%3E%3E><code>->></code> aka thread-last</a> and <a href=https://clojuredocs.org/clojure.core/-%3E><code>-></code> aka thread-first</a>. In some case, <code>-></code> and <code>->></code> may perform the same operation if you do not pay enough attention. So I will also show you what&rsquo;s the difference between them. Note that <code>doc -></code> and <code>docs ->></code> din&rsquo;t make sense for me at first, so if same thing happened to you I hope that this post will make it clear.</p><p>If I am coding a function in Clojure, I would not think to write in macro firstly(maybe I am still new to it?). Macros like <code>-></code> and <code>->></code> only come in my mind when it comes to refactoring. They are not neccessary in our program but they will make it elegant.</p><p>To explain how both of these macros work, let&rsquo;s us solve a quiz together.</p><blockquote><p><a href=http://www.4clojure.com/problem/42#prob-title>Write a function which calculates factorials.</a></p></blockquote><p>I will write a function which accept an integer as parameter, and output the result.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(<span style=color:#a6e22e>factorial</span> <span style=color:#ae81ff>3</span>) <span style=color:#75715e>;; 6</span>
+</code></pre></div><p>To help you revise what&rsquo;s factorial:</p><pre><code>1 factorial is expressed as 1! = 1 = 1
+2 factorials is expressed as 2! = 2 x 1 = 2
+3 factorials is expressed as 3! = 3 x 2 x 1 = 6
+...
+</code></pre><p>Easy right?
+First of all we need to make up the vector which is a sequence of decrement of our initial value until 1. If we have number 5, we want to have a vector of [5, 4, 3, 2, 1] first.</p><p>My first attempt will be:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(<span style=color:#66d9ef>defn </span>factorial-seq [n]
+ (next (range (inc n))))
+ 
+(<span style=color:#a6e22e>factorial-seq</span> <span style=color:#ae81ff>5</span>) <span style=color:#75715e>;; (1 2 3 4 5)</span>
+</code></pre></div><p>You might have another solution in mind but I purposely make it as nested as possible for this post. Now we have a few nested expressions in our code and this does not make it very readable. We can try <code>comp</code> to reduce the number of parentheses. Here is my 2nd attemp:</p><pre><code>(defn factorial-seq [n]
+ ((comp next range inc) n ))
+ 
+(factorial-seq 5) ;; (1 2 3 4 5)
+</code></pre><p>This is better but when we read our code, we have to read it from inside to outside. The flow is opposite. We can do better. What if I tell you we can make write our code into the correct flow? Enter enter thread-last <code>->></code> macros.</p><p>My third attempt using -&#187; will be</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(<span style=color:#66d9ef>defn </span>factorial-seq [n]
+ ( -&gt;&gt; (inc n)
+       (<span style=color:#a6e22e>range</span>)
+       (<span style=color:#a6e22e>next</span>)))
+       
+(<span style=color:#a6e22e>factorial-seq</span> <span style=color:#ae81ff>5</span>) // (<span style=color:#ae81ff>1</span> <span style=color:#ae81ff>2</span> <span style=color:#ae81ff>3</span> <span style=color:#ae81ff>4</span> <span style=color:#ae81ff>5</span>)
+</code></pre></div><p>This is much readably. So we take our argument:</p><ol><li>Increase it by <code>inc</code></li><li>Then we compose a list by using <code>range</code></li><li>And finally we remove the first element in our list by using <code>next</code></li></ol><p>Wow !</p><p>What about the thread-first <code>-></code> macro, will it work in this case ?</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(<span style=color:#66d9ef>defn </span>factorial-seq [n]
+ ( -&gt; (inc n)
+       (<span style=color:#a6e22e>range</span>)
+       (<span style=color:#a6e22e>next</span>)))
+       
+(<span style=color:#a6e22e>factorial-seq</span> <span style=color:#ae81ff>5</span>) // (<span style=color:#ae81ff>1</span> <span style=color:#ae81ff>2</span> <span style=color:#ae81ff>3</span> <span style=color:#ae81ff>4</span> <span style=color:#ae81ff>5</span>)
+</code></pre></div><p>Wow seems like it&rsquo;s working. So let&rsquo;s move on =)</p><p>Continue to our quiz, now we have a list where we just have to multiply each of them into a number. I am going to use <code>reduce</code> to do this(although other like <code>apply</code> will work as well). Because we are using the thread macro, we can read our code in the correct order of what we are thinking. In this case we just need to add the <code>reduce</code> function into our last form of <code>thread</code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(<span style=color:#66d9ef>defn </span>factorial [n]
+ ( -&gt;&gt; (inc n)
+       (<span style=color:#a6e22e>range</span>)
+       (<span style=color:#a6e22e>next</span>)
+       (reduce *))) <span style=color:#75715e>;; reduce them by multiplying</span>
+       
+(<span style=color:#a6e22e>factorial</span> <span style=color:#ae81ff>5</span>) <span style=color:#75715e>;; 120</span>
+</code></pre></div><p>Don&rsquo;t you think this is cool? Let&rsquo;s see another brother <code>-></code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(<span style=color:#66d9ef>defn </span>factorial [n]
+ ( -&gt; (inc n)
+       (<span style=color:#a6e22e>range</span>)
+       (<span style=color:#a6e22e>next</span>)
+       (reduce *))) <span style=color:#75715e>;; reduce them by multiplying</span>
+       
+(<span style=color:#a6e22e>factorial</span> <span style=color:#ae81ff>5</span>) <span style=color:#75715e>;; IllegalArgumentException Don&#39;t know how to create ISeq</span>
+</code></pre></div><p>Oops, we are in trouble. And we know that it is caused by the <code>reduce</code> function. Let&rsquo;s use <code>macroexpand</code> to see what&rsquo;s happening under the hood.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(macroexpand-1 <span style=color:#f92672>&#39;</span>(<span style=color:#a6e22e>-&gt;&gt;</span> (inc <span style=color:#ae81ff>5</span>) (<span style=color:#a6e22e>range</span>) (<span style=color:#a6e22e>next</span>) (reduce *)))
+<span style=color:#75715e>;; (reduce * (next (range (inc 5))))</span>
+<span style=color:#75715e>;; (reduce * ...) &lt;-- let&#39;s simplify it</span>
+
+(macroexpand-1 <span style=color:#f92672>&#39;</span>(-&gt; (inc <span style=color:#ae81ff>5</span>) (<span style=color:#a6e22e>range</span>) (<span style=color:#a6e22e>next</span>) (reduce *)))
+<span style=color:#75715e>;; (reduce (next (range (inc 5))) *)</span>
+<span style=color:#75715e>;; (reduce ... *) &lt;-- let&#39;s simplify it</span>
+</code></pre></div><p>Ahhh, now it&rsquo;s clear. When <code>->> aka thread-last</code> is used, the value from the previous form will be passed as <strong>last item</strong>(&mldr; in our example above). Meanwhile, when <code>-> aka thread-first</code> is used, the value from the previous form will be passed as <strong>first item</strong>. Are their names (thread-first, thread-last) make sense now? Also if you look at the function before <code>reduce</code>, ie: <code>range</code>, <code>next</code>, you know that both these functions work with one argument. That&rsquo;s why using <code>->></code> and <code>-></code> dit not make differences.</p><p>Note that in Clojure, functions that deal with vector or list will take them as the last argument, ie: <code>reduce</code>, <code>map</code>. On the other hands, functions that deal with maps or stringn will take them as the first argument, ie: <code>get-in</code>, <code>split(string)</code>, <code>replace(string)</code>.
+That means in most cases, we use <code>->></code> when dealing with vector, list while <code>-></code> when dealing with map, string.</p><h2 id=bonus-thrush>Bonus: thrush</h2><p>When I try to understand these 2 macros, I came across a new word - <strong>thrush</strong>. <strong>thrush</strong> sounds like <code>->></code> and <code>-></code> at first, but as Fogus explained in [his post](* <a href=http://blog.fogus.me/2010/09/28/thrush-in-clojure-redux/),>http://blog.fogus.me/2010/09/28/thrush-in-clojure-redux/),</a> thread-last and thread-first macros will treat your forms as list, so code like:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(<span style=color:#66d9ef>defn </span>factorial-output [n]
+ ( -&gt;&gt; (inc n)
+       (<span style=color:#a6e22e>range</span>)
+       (<span style=color:#a6e22e>next</span>)
+       (reduce *)
+       <span style=color:#f92672>#</span>(str <span style=color:#e6db74>&#34;Answer is &#34;</span> % <span style=color:#e6db74>&#34;!&#34;</span>)))
+<span style=color:#75715e>;; (factorial-output 120)</span>
+<span style=color:#75715e>;; &lt;user$factorial_output$fn__861 user$factorial_output$fn__861@4ca567c6&gt;</span>
+</code></pre></div><p>will give us something not expected. Because the function <code>#(str "Answer is " % "!")</code> is not treated as function by macro <code>->></code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(macroexpand-1 <span style=color:#f92672>&#39;</span>(<span style=color:#a6e22e>-&gt;&gt;</span> (inc <span style=color:#ae81ff>5</span>) (<span style=color:#a6e22e>range</span>) (<span style=color:#a6e22e>next</span>) (reduce *) <span style=color:#f92672>#</span>(str <span style=color:#e6db74>&#34;Answer is &#34;</span> % <span style=color:#e6db74>&#34;!&#34;</span>)))
+<span style=color:#75715e>;; (fn* [p1__866#] (str &#34;Answer is &#34; p1__866# &#34;!&#34;) (reduce * (next (range (inc 5)))))</span>
+</code></pre></div><p>Just like pointed in the blog post, we can create a <code>thrush</code> function like:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(<span style=color:#66d9ef>defn </span>thrush [<span style=color:#f92672>&amp;</span> args] 
+  (reduce <span style=color:#f92672>#</span>(<span style=color:#a6e22e>%2</span> %1) args))
+</code></pre></div><p>Then use it in our function.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(<span style=color:#66d9ef>defn </span>factorial-output [n]
+ (<span style=color:#a6e22e>thrush</span> (inc n)
+       range
+       next
+       <span style=color:#f92672>#</span>(reduce * %)
+       <span style=color:#f92672>#</span>(str <span style=color:#e6db74>&#34;Answer is &#34;</span> % <span style=color:#e6db74>&#34;!&#34;</span>)))
+
+(<span style=color:#a6e22e>factorial-output</span> <span style=color:#ae81ff>5</span>)
+<span style=color:#75715e>;; &#34;Answer is 120!&#34;</span>
+</code></pre></div><p>Hooray. Now we don&rsquo;t even need to have parentheses for our forms, ie: <code>range</code>, <code>next</code>.</p><h2 id=read-more>Read more</h2><ul><li><a href=http://debasishg.blogspot.jp/2010/04/thrush-in-clojure.html>http://debasishg.blogspot.jp/2010/04/thrush-in-clojure.html</a></li><li><a href=http://blog.fogus.me/2010/09/28/thrush-in-clojure-redux/>http://blog.fogus.me/2010/09/28/thrush-in-clojure-redux/</a></li></ul></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

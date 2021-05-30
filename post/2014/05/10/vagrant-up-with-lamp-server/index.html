@@ -1,0 +1,81 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Vagrant Up With Lamp Server |</title><meta name=description content="A simple blog."><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2014/05/10/vagrant-up-with-lamp-server/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Vagrant Up With Lamp Server</h1><div class=post-metadata><time datetime=2014-05-10T00:00:00Z>May 10, 2014</time> &nbsp;
+<i class="far fa-clock"></i>
+3 min
+4 s
+&nbsp;</div></header><div class=post-text><p>###Download and Create Project
+First of all, download <a href=https://www.virtualbox.org/wiki/Downloads>VirtualBox</a> and <a href=http://www.vagrantup.com/downloads>Vagrant</a>. Also do not forget the VirtualBox <a href=http://download.virtualbox.org/virtualbox/4.3.10/Oracle_VM_VirtualBox_Extension_Pack-4.3.10-93012.vbox-extpack>Extension Pack</a></p><p>After installing, create a directory for project and initialize the directory.</p><pre><code>$ mkdir project
+$ cd project
+$ vagrant init 			# Creates Vagrantfile
+</code></pre><p>Of course, we can follow the documentation to do <code>vagrant box add hashicorp/precise32</code> but let&rsquo;s conclude it into our <code>Vagrantfile</code>.
+Let&rsquo;s create new provisioning script- <code>install.sh</code> in our project root to install apache, PHP, mysql, XDebug, Composer etc.</p><pre><code>sudo apt-get update
+
+sudo debconf-set-selections &lt;&lt;&lt; 'mysql-server mysql-server/root_password password root'
+sudo debconf-set-selections &lt;&lt;&lt; 'mysql-server mysql-server/root_password_again password root'
+
+sudo apt-get install -y vim curl python-software-properties
+sudo add-apt-repository -y ppa:ondrej/php5
+sudo apt-get update
+
+sudo apt-get install -y php5 apache2 libapache2-mod-php5 php5-curl php5-gd php5-mcrypt php5-readline mysql-server-5.5 php5-mysql git-core php5-xdebug
+
+cat &lt;&lt; EOF | sudo tee -a /etc/php5/mods-available/xdebug.ini
+xdebug.scream=1
+xdebug.cli_color=1
+xdebug.show_local_vars=1
+EOF
+
+sudo a2enmod rewrite
+
+sed -i &quot;s/error_reporting = .*/error_reporting = E_ALL/&quot; /etc/php5/apache2/php.ini
+sed -i &quot;s/display_errors = .*/display_errors = On/&quot; /etc/php5/apache2/php.ini
+sed -i &quot;s/disable_functions = .*/disable_functions = /&quot; /etc/php5/cli/php.ini
+
+sudo service apache2 restart
+
+curl -sS https://getcomposer.org/installer | php
+sudo mv composer.phar /usr/local/bin/composer
+</code></pre><p>Next, let&rsquo;s edit the magic <code>Vagrantfile</code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ruby data-lang=ruby><span style=color:#75715e># -*- mode: ruby -*-</span>
+<span style=color:#75715e># vi: set ft=ruby :</span>
+<span style=color:#66d9ef>VAGRANTFILE_API_VERSION</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;2&#34;</span>
+<span style=color:#66d9ef>Vagrant</span><span style=color:#f92672>.</span>configure(<span style=color:#66d9ef>VAGRANTFILE_API_VERSION</span>) <span style=color:#66d9ef>do</span> <span style=color:#f92672>|</span>config<span style=color:#f92672>|</span>
+  
+  config<span style=color:#f92672>.</span>vm<span style=color:#f92672>.</span>box <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;precise32&#34;</span>
+  config<span style=color:#f92672>.</span>vm<span style=color:#f92672>.</span>box_url <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;http://files.vagrantup.com/precise32.box&#34;</span>
+  config<span style=color:#f92672>.</span>vm<span style=color:#f92672>.</span>network <span style=color:#e6db74>:private_network</span>, <span style=color:#e6db74>ip</span>: <span style=color:#e6db74>&#34;192.168.33.10&#34;</span>
+  config<span style=color:#f92672>.</span>vm<span style=color:#f92672>.</span>provision <span style=color:#e6db74>:shell</span>, <span style=color:#e6db74>:path</span> <span style=color:#f92672>=&gt;</span> <span style=color:#e6db74>&#34;install.sh&#34;</span>
+  config<span style=color:#f92672>.</span>vm<span style=color:#f92672>.</span>synced_folder <span style=color:#e6db74>&#34;.&#34;</span>, <span style=color:#e6db74>&#34;/var/www&#34;</span>
+<span style=color:#66d9ef>end</span>
+</code></pre></div><p>This basically talks to Vagrant like this:</p><ul><li>Hey, install Ubuntu Server 12.04(32 bit) for me, you can find it at the link given</li><li>I want to access my server via <code>192.168.33.10</code></li><li>I want you to install something else. Please look at them at <code>install.sh</code>(which created at first)</li><li>Sync all the files to the /var/www so I can access them on my host machine(own desktop)
+###Boot into Virtual Machine
+Yes, we can now</li></ul><pre><code>$ vagrant up 	# Start the server
+# ...... This might takes a long time for the first time. ......
+$ vagrant ssh 	# Log into server
+</code></pre><p>Once you&rsquo;re in, try to play around by checking all the software installed.</p><pre><code>php -v
+composer
+apache2 -v
+mysql -u root -p 	# Both username and password are root
+</code></pre><p>You should be seeing something like <em>It Works!</em> if you browse <code>192.168.33.10</code> via your Chrome or Firefox. We&rsquo;ll be able to see the <em>index.php</em> inside /var/www/html directory. Also, the directory <code>/vagrant</code> in virtual machine is synced to <code>/var/www</code> in host machine.
+###A more human like address<br>Next, instead of typing <code>192.168.33.10</code> to access our page, we can set it to a url like address. For instance, <code>dev.local</code>. To do this, we need to configure 2 files. First, inside our virtual machine(after SSHed), let&rsquo;s open up <code>/etc/apache2/sites-enabled/000-default.conf</code>.</p><pre><code># ServerName www.example.com
+# Uncomment it and change it to the URL you like
+
+ ServerName dev.local
+
+ ServerAdmin webmaster@localhost
+ DocumentRoot /var/www/html
+</code></pre><p>Here we changed the server name to <code>dev.local</code>. Also don&rsquo;t forget to reload apache.</p><pre><code>sudo service apache2 reload
+</code></pre><p>Next, use <code>ctrl+d</code> or <code>cmd+d</code> to logout to our host machine and customize the <code>/etc/hosts</code> file.</p><pre><code>127.0.0.1 		localhost
+...
+
+192.168.33.10 	dev.local 	# Add this line according to your own private 
+							# network ip and server name
+</code></pre><p>Try to go to <code>dev.local/</code> in your browser. You should see Apache2 default page.
+The default document root is <code>/var/www/html</code>, so to start using our LAMP server, we can delete the default <code>index.php</code> inside the directory and create our own. Of course if you like you can alter your document root. For instance <code>/var/www/</code>.</p><p>So we had successful created our LAMP server on vagrant up. It might be a little bit painful at first but once you get comfortable with it, you can create your next project like a boss.</p><p>###Shut down the VM
+Also don&rsquo;t forget to shut down your virtual machine when you&rsquo;re done.</p><pre><code>$ vagrant suspend 	# super fast shutdown and start
+$ vagrant up        # take some extra time to start 
+$ vagrant destory   # take more time to start
+</code></pre><p>All of these 3 commands work to shut down a virtual machine with differenct speed. Of course the one take shorter time to shut down and boot up consumes more disk space and RAM.</p><p>###Resource</p><ul><li><a href=http://serversforhackers.com/editions/2014/02/25/vagrant-apache/>http://serversforhackers.com/editions/2014/02/25/vagrant-apache/</a></li><li><a href=https://gist.github.com/fideloper/7074502>https://gist.github.com/fideloper/7074502</a></li></ul></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

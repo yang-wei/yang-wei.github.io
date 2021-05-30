@@ -1,0 +1,197 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Javascript Destructuring Assignment and Spread Operator |</title><meta name=description content="In this post we dive deep into one of the most excited ES6 feature - destructuring (we also include some discussion related to spread operator)"><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2016/01/15/javascript-destructuring-assignment-and-spread-operator/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Javascript Destructuring Assignment and Spread Operator</h1><div class=post-metadata><time datetime=2016-01-15T00:00:00Z>January 15, 2016</time> &nbsp;
+<i class="far fa-clock"></i>
+5 min
+49 s
+&nbsp;
+<i class="fas fa-folder"></i>
+<a href=/categories/es6>es6</a>
+&nbsp;
+<a href=/categories/destructuring>destructuring</a>
+&nbsp;
+<a href=/categories/javascript>javascript</a>
+&nbsp;
+<a href=/categories/spread>spread</a>
+&nbsp;</div></header><div class=post-text><p>We will first discussed how destructuring and spread operator can be used in ES6 - in arrays and objects. Then we will look at a few examples and also discuss some interesting quiz.</p><h3 id=arrays>arrays</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>array</span> <span style=color:#f92672>=</span> [<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>, <span style=color:#ae81ff>3</span>, <span style=color:#ae81ff>4</span>];
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>nestedArray</span> <span style=color:#f92672>=</span> [<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>, <span style=color:#ae81ff>3</span>, <span style=color:#ae81ff>4</span>, [<span style=color:#ae81ff>7</span>, <span style=color:#ae81ff>8</span>, <span style=color:#ae81ff>9</span>]];
+
+<span style=color:#66d9ef>var</span> [<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>c</span>, <span style=color:#a6e22e>d</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>array</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>c</span>, <span style=color:#a6e22e>d</span>)
+<span style=color:#75715e>// -------- 1  2  3  4
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>var</span> [<span style=color:#a6e22e>a</span>, , , <span style=color:#a6e22e>d</span>, [<span style=color:#a6e22e>x</span>, <span style=color:#a6e22e>y</span>, <span style=color:#a6e22e>z</span>]] <span style=color:#f92672>=</span> <span style=color:#a6e22e>nestedArray</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>d</span>, <span style=color:#a6e22e>x</span>, <span style=color:#a6e22e>y</span>, <span style=color:#a6e22e>z</span>)
+<span style=color:#75715e>// -------- 1  4  7  8  9
+</span></code></pre></div><p>We don&rsquo;t have to match the full array</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> [<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>c</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>array</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>c</span>)
+<span style=color:#75715e>// -------- 1  2  3
+</span><span style=color:#75715e></span>
+<span style=color:#75715e>// spread operator
+</span><span style=color:#75715e></span><span style=color:#66d9ef>var</span> [<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, ...<span style=color:#a6e22e>c</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>array</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>c</span>);
+<span style=color:#75715e>// [3, 4]
+</span></code></pre></div><p><strong>Remember: when using spread operator, you must apply it as the last argument.</strong></p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> [...<span style=color:#a6e22e>head</span>, <span style=color:#a6e22e>d</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>array</span>;
+<span style=color:#75715e>// Uncaught SyntaxError: Unexpected token...
+</span></code></pre></div><p>When destructuring variable exceeds its matched array, undefined is returned</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> [<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>c</span>, <span style=color:#a6e22e>d</span>, <span style=color:#a6e22e>e</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>array</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>e</span>);
+<span style=color:#75715e>// undefined
+</span></code></pre></div><p>But we can always back it up by set its default value</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> [<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>c</span>, <span style=color:#a6e22e>d</span>, <span style=color:#a6e22e>e</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>5</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>array</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>e</span>);
+<span style=color:#75715e>// -------- 5
+</span></code></pre></div><p>We can clone array easily</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> [...<span style=color:#a6e22e>clonedArray</span>] <span style=color:#f92672>=</span> <span style=color:#a6e22e>array</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>clonedArray</span>);
+<span style=color:#75715e>// [1, 2, 3, 4]
+</span><span style=color:#75715e></span>
+<span style=color:#75715e>// clone the nested one
+</span><span style=color:#75715e></span><span style=color:#66d9ef>var</span> [,,,, [...<span style=color:#a6e22e>clonedNestedArray</span>]] <span style=color:#f92672>=</span> <span style=color:#a6e22e>nestedArray</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>clonedNestedArray</span>);
+<span style=color:#75715e>// [7, 8, 9]
+</span></code></pre></div><p>Swap variable like a boss</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>, <span style=color:#a6e22e>b</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>2</span>;
+[<span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>a</span>] <span style=color:#f92672>=</span> [<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>];
+</code></pre></div><p>If you had writing some JavaScript before, here is how you used to access arguments passed into a function.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>foo</span>() {
+  <span style=color:#66d9ef>return</span> Array.<span style=color:#a6e22e>prototype</span>.<span style=color:#a6e22e>slice</span>.<span style=color:#a6e22e>call</span>(<span style=color:#a6e22e>arguments</span>, <span style=color:#ae81ff>0</span>);
+}
+
+<span style=color:#a6e22e>foo</span>(<span style=color:#ae81ff>1</span>,<span style=color:#ae81ff>2</span>,<span style=color:#ae81ff>3</span>,<span style=color:#ae81ff>4</span>,<span style=color:#ae81ff>5</span>) <span style=color:#75715e>// [1, 2, 3, 4, 5]
+</span></code></pre></div><p>We can now refactor it into a shorter code:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>foo</span>(...<span style=color:#a6e22e>args</span>) {
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>args</span>;
+}
+
+<span style=color:#a6e22e>foo</span>(<span style=color:#ae81ff>1</span>,<span style=color:#ae81ff>2</span>,<span style=color:#ae81ff>3</span>,<span style=color:#ae81ff>4</span>,<span style=color:#ae81ff>5</span>) <span style=color:#75715e>// [1, 2, 3, 4, 5]
+</span></code></pre></div><h3 id=object>Object</h3><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>object</span> <span style=color:#f92672>=</span> {<span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;A&#34;</span>, <span style=color:#a6e22e>b</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;B&#34;</span>, <span style=color:#a6e22e>c</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;C&#34;</span>};
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>nestedObject</span> <span style=color:#f92672>=</span> {<span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;A&#34;</span>, <span style=color:#a6e22e>b</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;B&#34;</span>, <span style=color:#a6e22e>c</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;C&#34;</span>, <span style=color:#a6e22e>x</span><span style=color:#f92672>:</span> {<span style=color:#a6e22e>y</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;Y&#34;</span>, <span style=color:#a6e22e>z</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;Z&#34;</span>}};
+
+<span style=color:#66d9ef>var</span> {<span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>A</span>, <span style=color:#a6e22e>b</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>B</span>, <span style=color:#a6e22e>c</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>C</span>} <span style=color:#f92672>=</span> <span style=color:#a6e22e>object</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>A</span>, <span style=color:#a6e22e>B</span>, <span style=color:#a6e22e>C</span>);
+<span style=color:#75715e>// ------ &#34;A&#34; &#34;B&#34; &#34;C&#34;
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>var</span> {<span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>A</span>, <span style=color:#a6e22e>b</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>B</span>, <span style=color:#a6e22e>c</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>C</span>, <span style=color:#a6e22e>x</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>X</span>} <span style=color:#f92672>=</span> <span style=color:#a6e22e>nestedObject</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>X</span>);
+<span style=color:#75715e>// {y: &#34;Y&#34;, z: &#34;Z&#34;}
+</span></code></pre></div><p>When we only need a value</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> {<span style=color:#a6e22e>b</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>B</span>} <span style=color:#f92672>=</span> <span style=color:#a6e22e>object</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>B</span>);
+<span style=color:#75715e>// ------- &#34;B&#34;
+</span></code></pre></div><p>Similar to array, we can set a default value</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> {<span style=color:#a6e22e>b</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>B</span>, <span style=color:#a6e22e>d</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>D</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;D&#34;</span>} <span style=color:#f92672>=</span> <span style=color:#a6e22e>object</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>B</span>, <span style=color:#a6e22e>D</span>);
+<span style=color:#75715e>// ------- &#34;B&#34; &#34;D&#34;
+</span><span style=color:#75715e></span>
+<span style=color:#75715e>// and it returns undefined when keys are not match
+</span><span style=color:#75715e></span><span style=color:#66d9ef>var</span> {<span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>A</span>, <span style=color:#a6e22e>b</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>B</span>, <span style=color:#a6e22e>d</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>D</span>} <span style=color:#f92672>=</span> <span style=color:#a6e22e>object</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>A</span>, <span style=color:#a6e22e>B</span>, <span style=color:#a6e22e>D</span>);
+<span style=color:#75715e>// -------&#34;A&#34; &#34;B&#34; undefined
+</span></code></pre></div><p>For every object destructuring we have to write `{ keys: newVariable } explicitly and this is very verbose. Let&rsquo;s enter short hand method:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> {<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>c</span>} <span style=color:#f92672>=</span> <span style=color:#a6e22e>object</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>c</span>);
+<span style=color:#75715e>// -------&#34;A&#34; &#34;B&#34; &#34;C&#34;
+</span></code></pre></div><p>It might seems confuse at first but this is the short hand of</p><pre><code>var {a: a, b: b, c: c} = object;
+// new variables a, b, c are created
+</code></pre><p>Do not use short hand method if you want to create different variable name.</p><p>Continue to other examples:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>object</span> <span style=color:#f92672>=</span> {<span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;A&#34;</span>, <span style=color:#a6e22e>b</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;B&#34;</span>, <span style=color:#a6e22e>c</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;C&#34;</span>};
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>nestedObject</span> <span style=color:#f92672>=</span> {<span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;A&#34;</span>, <span style=color:#a6e22e>b</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;B&#34;</span>, <span style=color:#a6e22e>c</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;C&#34;</span>, <span style=color:#a6e22e>x</span><span style=color:#f92672>:</span> {<span style=color:#a6e22e>y</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;Y&#34;</span>, <span style=color:#a6e22e>z</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;Z&#34;</span>}};
+
+
+<span style=color:#66d9ef>var</span> {<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>c</span>, <span style=color:#a6e22e>x</span>} <span style=color:#f92672>=</span> <span style=color:#a6e22e>nestedObject</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>x</span>);
+<span style=color:#75715e>// { y: &#34;Y&#34;, z: &#34;Z&#34; }
+</span><span style=color:#75715e></span>
+
+<span style=color:#66d9ef>var</span> {<span style=color:#a6e22e>b</span>} <span style=color:#f92672>=</span> <span style=color:#a6e22e>object</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>b</span>);
+<span style=color:#75715e>// ------- &#34;B&#34;
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>var</span> {<span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>d</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;D&#34;</span>} <span style=color:#f92672>=</span> <span style=color:#a6e22e>object</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>d</span>, <span style=color:#a6e22e>d</span>);
+<span style=color:#75715e>// ------- &#34;B&#34; &#34;D&#34;
+</span><span style=color:#75715e></span>
+<span style=color:#75715e>// and it returns undefined when keys are not match
+</span><span style=color:#75715e></span><span style=color:#66d9ef>var</span> {<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>d</span>} <span style=color:#f92672>=</span> <span style=color:#a6e22e>object</span>;
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, <span style=color:#a6e22e>d</span>);
+<span style=color:#75715e>// ------- &#34;A&#34; &#34;B&#34; undefined
+</span></code></pre></div><p>Using spread in object destructuring failed =(</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>// error
+</span><span style=color:#75715e>// var {a: A, b: B, c: ...C} = object;
+</span><span style=color:#75715e>// console.log(A, B, C);   &lt;-- error
+</span><span style=color:#75715e>// use the shorthand method
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>var</span> {<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>, ...<span style=color:#a6e22e>c</span>} <span style=color:#f92672>=</span> <span style=color:#a6e22e>object</span>;  <span style=color:#75715e>// es7
+</span><span style=color:#75715e></span><span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>c</span>); <span style=color:#75715e>// {c: &#34;C&#34;}
+</span></code></pre></div><p>We used to write long code like this:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>John</span> <span style=color:#f92672>=</span> {<span style=color:#a6e22e>name</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;John&#34;</span>, <span style=color:#a6e22e>age</span><span style=color:#f92672>:</span> <span style=color:#ae81ff>20</span>};
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>Marry</span> <span style=color:#f92672>=</span> {<span style=color:#a6e22e>name</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;Marry&#34;</span>};
+
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>getAge</span>(<span style=color:#a6e22e>person</span>) {
+  <span style=color:#a6e22e>age</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>person</span>.<span style=color:#a6e22e>age</span> <span style=color:#f92672>||</span> <span style=color:#ae81ff>18</span> <span style=color:#75715e>// default value
+</span><span style=color:#75715e></span>  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>age</span>
+}
+<span style=color:#a6e22e>getAge</span>(<span style=color:#a6e22e>John</span>);  <span style=color:#75715e>// 20
+</span><span style=color:#75715e></span><span style=color:#a6e22e>getAge</span>(<span style=color:#a6e22e>Marry</span>); <span style=color:#75715e>// 18
+</span><span style=color:#75715e>// with es6 
+</span><span style=color:#75715e></span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>getAge</span>({<span style=color:#a6e22e>age</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>18</span>}) {
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>age</span>
+}
+</code></pre></div><h3 id=example>Example</h3><p>Let&rsquo;s see some pratical usage.
+Eg: optional arguments for functions</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>sum</span>(...<span style=color:#a6e22e>numbers</span>) {
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>numbers</span>.<span style=color:#a6e22e>reduce</span>((<span style=color:#a6e22e>n</span>, <span style=color:#a6e22e>total</span>) =&gt; {
+    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>n</span> <span style=color:#f92672>+</span> <span style=color:#a6e22e>total</span>
+  }, <span style=color:#ae81ff>0</span>);
+}
+<span style=color:#a6e22e>sum</span>();   <span style=color:#75715e>// 0
+</span><span style=color:#75715e></span><span style=color:#a6e22e>sum</span>(<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>, <span style=color:#ae81ff>3</span>);   <span style=color:#75715e>// 6
+</span><span style=color:#75715e></span><span style=color:#a6e22e>sum</span>(<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>, <span style=color:#ae81ff>3</span>, <span style=color:#ae81ff>4</span>, <span style=color:#ae81ff>5</span>);   <span style=color:#75715e>// 15
+</span><span style=color:#75715e></span>
+<span style=color:#75715e>// more abstraction &lt;-- out of topic
+</span><span style=color:#75715e></span><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>math</span>(<span style=color:#a6e22e>equation</span>, ...<span style=color:#a6e22e>numbers</span>) {
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>numbers</span>.<span style=color:#a6e22e>reduce</span>((<span style=color:#a6e22e>n</span>, <span style=color:#a6e22e>total</span>) =&gt; {
+    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>equation</span>.<span style=color:#a6e22e>call</span>(<span style=color:#66d9ef>null</span>, <span style=color:#a6e22e>n</span>, <span style=color:#a6e22e>total</span>);
+  });
+}
+
+<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>add</span> <span style=color:#f92672>=</span> (<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>) =&gt; { <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>+</span> <span style=color:#a6e22e>b</span>; }
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>sum1</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>math</span>(<span style=color:#a6e22e>add</span>, <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>, <span style=color:#ae81ff>3</span>, <span style=color:#ae81ff>4</span>);
+<span style=color:#75715e>// 10
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>times</span> <span style=color:#f92672>=</span> (<span style=color:#a6e22e>a</span>, <span style=color:#a6e22e>b</span>) =&gt; { <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>a</span> <span style=color:#f92672>*</span> <span style=color:#a6e22e>b</span>; }
+<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>product1</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>math</span>(<span style=color:#a6e22e>times</span>, <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>, <span style=color:#ae81ff>3</span>)
+<span style=color:#75715e>// 6
+</span></code></pre></div><h4 id=example-on-oss>Example on OSS</h4><p>Let&rsquo;s look at some example on some great open source project - <a href=https://github.com/rackt/redux>redux</a>.
+In redux source code there is a utils function - <a href=https://github.com/rackt/redux/blob/d2969b5e5a1fcc1489feec0a4fcc06f92e1a3e6b/src%2Fcompose.js><code>compose</code></a> which is used to turn our verbose code into a nicer one.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>function</span> (<span style=color:#a6e22e>arg</span>) { <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>fn1</span>(<span style=color:#a6e22e>fn2</span>(<span style=color:#a6e22e>fn3</span>(<span style=color:#a6e22e>arg</span>))); }
+</code></pre></div><p>into</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>function</span>(<span style=color:#a6e22e>arg</span>) { <span style=color:#a6e22e>compose</span>(<span style=color:#a6e22e>fn1</span>, <span style=color:#a6e22e>fn2</span>, <span style=color:#a6e22e>fn3</span>)(<span style=color:#a6e22e>arg</span>) }
+</code></pre></div><p>Here is the shorten source code and explaination</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>export</span> <span style=color:#66d9ef>default</span> <span style=color:#66d9ef>function</span> <span style=color:#a6e22e>compose</span>(...<span style=color:#a6e22e>funcs</span>) {   <span style=color:#75715e>// here, a list of function(s) is expected: fn1, [fn2, fn3...]
+</span><span style=color:#75715e></span>  <span style=color:#66d9ef>return</span> (...<span style=color:#a6e22e>args</span>) =&gt; { <span style=color:#75715e>// it return a composed function which expects a list of argument(s): arg1, [arg2, arg3... ]
+</span><span style=color:#75715e></span>    <span style=color:#75715e>// args is now an array: args = [arg1, arg2, ...]
+</span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>last</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>funcs</span>[<span style=color:#a6e22e>funcs</span>.<span style=color:#a6e22e>length</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>]
+    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>rest</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>funcs</span>.<span style=color:#a6e22e>slice</span>(<span style=color:#ae81ff>0</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>)
+    
+    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>rest</span>.<span style=color:#a6e22e>reduceRight</span>((<span style=color:#a6e22e>composed</span>, <span style=color:#a6e22e>f</span>) =&gt; <span style=color:#a6e22e>f</span>(<span style=color:#a6e22e>composed</span>), <span style=color:#a6e22e>last</span>(...<span style=color:#a6e22e>args</span>)) 
+    <span style=color:#75715e>// the first part in reduce right is not so interesting, we just keep chaining functions
+</span><span style=color:#75715e></span>    <span style=color:#75715e>// in the second part - last(...args)
+</span><span style=color:#75715e></span>    <span style=color:#75715e>// since our last function will accept argument like last(arg1, arg2...) instead of last([arg1, arg2...])
+</span><span style=color:#75715e></span>    <span style=color:#75715e>// we turn [arg1, arg2, ...] into arg1, arg2, ...
+</span><span style=color:#75715e></span>    <span style=color:#75715e>// by using rest
+</span><span style=color:#75715e></span>  }
+}
+</code></pre></div><p>To simplify how the <code>args</code> being changed:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>inspect</span>(...<span style=color:#a6e22e>args</span>) {
+  <span style=color:#75715e>// when this function is called
+</span><span style=color:#75715e></span>  <span style=color:#75715e>// args = [&#34;a&#34;, &#34;b&#34;, &#34;c&#34;]
+</span><span style=color:#75715e></span>  
+  <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>args</span>)  <span style=color:#75715e>// [&#34;a&#34;, &#34;b&#34;, &#34;c&#34;]
+</span><span style=color:#75715e></span>  <span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(...<span style=color:#a6e22e>args</span>) <span style=color:#75715e>// &#34;a&#34; &#34;b&#34; &#34;c&#34;
+</span><span style=color:#75715e></span>}
+<span style=color:#a6e22e>inspect</span>(<span style=color:#e6db74>&#34;a&#34;</span>, <span style=color:#e6db74>&#34;b&#34;</span>, <span style=color:#e6db74>&#34;c&#34;</span>)
+</code></pre></div><h3 id=quiz>Quiz</h3><p>@kangax published an <a href=http://perfectionkills.com/javascript-quiz-es6/>ES6 JavaScript quiz</a> and there are fews(Q3, Q7, Q11) related to destructuring and spread operator. Let&rsquo;s have fun with them.</p><h4 id=1-quiz-q3-from-es6-javascript-quiz>1 (quiz Q3 from ES6 JavaScript quiz)</h4><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>x</span>, { <span style=color:#a6e22e>x</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>y</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span> } <span style=color:#f92672>=</span> { <span style=color:#a6e22e>x</span> }; <span style=color:#a6e22e>y</span>;
+</code></pre></div><p>Let break it down piece by piece:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> <span style=color:#a6e22e>x</span>, <span style=color:#75715e>// x = undefined
+</span><span style=color:#75715e></span>   { <span style=color:#a6e22e>x</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>y</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span> } <span style=color:#f92672>=</span> { <span style=color:#a6e22e>x</span> }
+   <span style=color:#75715e>// here a new variable y is created with default value 1
+</span><span style=color:#75715e></span>   <span style=color:#75715e>// but since x is undefined on right hand side
+</span><span style=color:#75715e></span>   <span style=color:#75715e>// we can think of it as
+</span><span style=color:#75715e></span>   <span style=color:#75715e>// { x: y = 1 } = { }
+</span><span style=color:#75715e></span>   <span style=color:#a6e22e>y</span>; <span style=color:#75715e>// when we call this y returns 1
+</span></code></pre></div><h4 id=2-quiz-q7-from-es6-javascript-quiz>2 (quiz Q7 from ES6 JavaScript quiz)</h4><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js>[...[...<span style=color:#e6db74>&#39;...&#39;</span>]].<span style=color:#a6e22e>length</span>
+</code></pre></div><p>First I was scared by the syntax. But the <code>'...'</code> is actually a string. To make it clear:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js>[...[...<span style=color:#e6db74>&#39;str&#39;</span>]]
+</code></pre></div><p>Since string is iterable so <code>...'str'</code> will give us <code>["s", "t", "r"]</code>.
+Then the next spread <code>[...["s", "t", "r"]]</code> will give us <code>["s", "t", "r"]</code>.
+So the answer is clear.</p><h4 id=3-quiz-q11-from-es6-javascript-quiz>3 (quiz Q11 from ES6 JavaScript quiz)</h4><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js>((...<span style=color:#a6e22e>x</span>, <span style=color:#a6e22e>xs</span>)=&gt;<span style=color:#a6e22e>x</span>)(<span style=color:#ae81ff>1</span>,<span style=color:#ae81ff>2</span>,<span style=color:#ae81ff>3</span>)
+</code></pre></div><p>As stated above in the array section, spread operator only can be applied as the last argument. So this will throw us error.</p><h4 id=4>4</h4><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>let</span> { <span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> { <span style=color:#a6e22e>length</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>a</span> } } <span style=color:#f92672>=</span> { <span style=color:#a6e22e>a</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;AAA&#34;</span>, <span style=color:#a6e22e>b</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;BBB&#34;</span> }
+<span style=color:#a6e22e>console</span>.<span style=color:#a6e22e>log</span>(<span style=color:#a6e22e>a</span>)
+</code></pre></div><p>You guess it !</p><h3 id=conclusion>Conclusion</h3><p>Destructuring is one of the most excited feature in ES6. As you see in quiz, destructuring can turned into difficult-to-understand code if you are not careful. So happy destructuring !!!
+That&rsquo;s all for now, I hope you enjoy the discussion.</p><ul><li><a href=https://gist.github.com/mikaelbr/9900818>Gist - Several demos and usages for ES6 destructuring</a></li><li><a href=https://ponyfoo.com/articles/es6-destructuring-in-depth>ES6 JavaScript Destructuring in Depth</a></li><li><a href=https://github.com/rackt/redux>redux</a></li><li><a href=http://perfectionkills.com/javascript-quiz-es6/>ES6 quiz</a></li></ul></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

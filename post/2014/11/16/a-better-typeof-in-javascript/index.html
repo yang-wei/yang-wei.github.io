@@ -1,0 +1,64 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>A Better Typeof in Javascript |</title><meta name=description content="Check type of array, function in javascript."><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2014/11/16/a-better-typeof-in-javascript/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>A Better Typeof in Javascript</h1><div class=post-metadata><time datetime=2014-11-16T00:00:00Z>November 16, 2014</time> &nbsp;
+<i class="far fa-clock"></i>
+1 min
+54 s
+&nbsp;
+<i class="fas fa-folder"></i>
+<a href=/categories/typeof>typeof</a>
+&nbsp;
+<a href=/categories/javascript>javascript</a>
+&nbsp;
+<a href=/categories/array>array</a>
+&nbsp;</div></header><div class=post-text><p>In Javascript, there is a <code>typeof</code> operator to indicate the type of operand provided.
+However, <code>typeof</code> only return object or primitive value.</p><p>{% blockquote MDN <a href=https://developer.mozilla.org/en-US/docs/Glossary/Primitive>https://developer.mozilla.org/en-US/docs/Glossary/Primitive</a> Primitive %}
+A primitive (primitive value, primitive data type) is data that is not an Object and does not have any methods.
+{% endblockquote %}</p><p>So in short,</p><ul><li>primitive - <code>String</code>, <code>Number</code>, <code>Boolean</code>, <code>Null</code>, <code>undefined</code>, <code>Symbol</code>(new in ECMAScript 6)</li><li>non-primitive - object including <code>Array</code>, <code>Function</code>, and <code>Object</code></li></ul><p>This mean that if we use <code>typeof</code> to test primitive values, we will get the result we want except some strange cases.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>typeof</span> <span style=color:#66d9ef>true</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;boolean&#39;</span>
+<span style=color:#66d9ef>typeof</span> <span style=color:#ae81ff>100</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;number&#39;</span>
+<span style=color:#75715e>// strange
+</span><span style=color:#75715e></span><span style=color:#66d9ef>typeof</span> <span style=color:#66d9ef>NaN</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;number&#39;</span>
+<span style=color:#66d9ef>typeof</span> <span style=color:#66d9ef>null</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;object&#39;</span>
+</code></pre></div><p>This <a href=http://www.2ality.com/2013/10/typeof-null.html>post</a> explains the strange case. Now let&rsquo;s see what happened when we test non-primitives.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>typeof</span> <span style=color:#66d9ef>function</span>() {} <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;object&#39;</span>   <span style=color:#75715e>// we want function
+</span><span style=color:#75715e></span><span style=color:#66d9ef>typeof</span> [<span style=color:#e6db74>&#34;Obviously&#34;</span>, <span style=color:#e6db74>&#34;is&#34;</span>, <span style=color:#e6db74>&#34;an&#34;</span>, <span style=color:#e6db74>&#34;array&#34;</span>] <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;object&#39;</span> <span style=color:#75715e>// we want array
+</span><span style=color:#75715e></span><span style=color:#66d9ef>typeof</span> { <span style=color:#a6e22e>name</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;obj&#39;</span> } <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;object&#39;</span> <span style=color:#75715e>// ok this is good
+</span><span style=color:#75715e></span><span style=color:#66d9ef>typeof</span> <span style=color:#66d9ef>new</span> Date() <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;object&#39;</span>  <span style=color:#75715e>// we want date 
+</span></code></pre></div><p>So to get the type of those non-primitives, we will use <code>Object.prototype.toString</code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>toString</span> <span style=color:#f92672>=</span> Object.<span style=color:#a6e22e>prototype</span>.<span style=color:#a6e22e>toString</span>;
+
+<span style=color:#a6e22e>toString</span>.<span style=color:#a6e22e>call</span>(<span style=color:#66d9ef>function</span>() {}) <span style=color:#f92672>===</span> <span style=color:#e6db74>&#34;[object Function]&#34;</span>
+<span style=color:#a6e22e>toString</span>.<span style=color:#a6e22e>call</span>([<span style=color:#e6db74>&#34;Obviously&#34;</span>, <span style=color:#e6db74>&#34;is&#34;</span>, <span style=color:#e6db74>&#34;an&#34;</span>, <span style=color:#e6db74>&#34;array&#34;</span>]) <span style=color:#f92672>===</span> <span style=color:#e6db74>&#34;[object Array]&#34;</span>
+<span style=color:#a6e22e>toString</span>.<span style=color:#a6e22e>call</span>({ <span style=color:#a6e22e>nane</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;obj&#39;</span> }) <span style=color:#f92672>===</span> <span style=color:#e6db74>&#34;[object Object]&#34;</span>
+<span style=color:#a6e22e>toString</span>.<span style=color:#a6e22e>call</span>(<span style=color:#66d9ef>new</span> Date()) <span style=color:#f92672>===</span> <span style=color:#e6db74>&#34;[object Object]&#34;</span>
+</code></pre></div><p>Here, we use call to borrow <code>toString</code> function from Object.prototype. So to make implement this in real work program, we can create a new function.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#75715e>// create a getRealType function to detect array, function correctly
+</span><span style=color:#75715e></span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>realTypes</span> <span style=color:#f92672>=</span> {
+  <span style=color:#e6db74>&#34;[object Function]&#34;</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;function&#34;</span>,
+  <span style=color:#e6db74>&#34;[object Array]&#34;</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#34;array&#34;</span>,
+};
+
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>getRealType</span>(<span style=color:#a6e22e>obj</span>) {
+  <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>t</span> <span style=color:#f92672>=</span> Object.<span style=color:#a6e22e>prototype</span>.<span style=color:#a6e22e>toString</span>.<span style=color:#a6e22e>call</span>(<span style=color:#a6e22e>obj</span>);
+  <span style=color:#66d9ef>if</span>(<span style=color:#a6e22e>realTypes</span>.<span style=color:#a6e22e>hasOwnProperty</span>(<span style=color:#a6e22e>t</span>)) {
+    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>realTypes</span>[<span style=color:#a6e22e>t</span>];  
+  }
+  <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>typeof</span> <span style=color:#a6e22e>obj</span>
+}
+<span style=color:#a6e22e>getRealType</span>([<span style=color:#ae81ff>1</span>,<span style=color:#ae81ff>2</span>,<span style=color:#ae81ff>3</span>]) <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;array&#39;</span> <span style=color:#75715e>// yeah !
+</span></code></pre></div><p>Then our new function will be able to return the correct type of <code>function</code> and <code>array</code>. Of course we can extend our function to detect <code>Date</code>, <code>RegExp</code>. Or we can get fancy by using <code>Sting..prototype.slice</code> to make thing easier.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>toString</span> <span style=color:#f92672>=</span> Object.<span style=color:#a6e22e>prototype</span>.<span style=color:#a6e22e>toString</span>,
+    <span style=color:#a6e22e>type</span>;
+
+<span style=color:#66d9ef>function</span> <span style=color:#a6e22e>getRealType</span>(<span style=color:#a6e22e>obj</span>) {
+  <span style=color:#a6e22e>type</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>typeof</span> <span style=color:#a6e22e>obj</span>;
+  <span style=color:#66d9ef>if</span>(<span style=color:#a6e22e>type</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;object&#39;</span>) {
+    <span style=color:#75715e>// We know we will get something like &#39;[Object Array]&#39;, what we want is &#39;Array&#39;
+</span><span style=color:#75715e></span>    <span style=color:#a6e22e>type</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>toString</span>.<span style=color:#a6e22e>call</span>(<span style=color:#a6e22e>obj</span>).<span style=color:#a6e22e>slice</span>(<span style=color:#ae81ff>8</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>);
+  }
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>type</span>;
+}
+
+<span style=color:#a6e22e>getRealType</span>([<span style=color:#ae81ff>1</span>,<span style=color:#ae81ff>2</span>,<span style=color:#ae81ff>3</span>]) <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;Array&#39;</span>
+<span style=color:#a6e22e>getRealType</span>(<span style=color:#66d9ef>new</span> Date()) <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;Date&#39;</span>
+</code></pre></div><p>###Conclusion
+Although sometime Javascript <code>typeof</code> doesn&rsquo;t provide the detail information we want, we can make it better by using <code>Objecet.prototype.toString</code>. So when we want to detect <code>number</code>, <code>string</code> etc, <code>typeof</code> is really easy and handy. When it comes to <code>array</code>, <code>function</code> etc, <code>typeof</code> returns <code>object</code>, we can use the method above.</p><p>###Resource</p><ul><li><a href=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof>https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof</a></li><li><a href=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/toString>https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/toString</a></li><li><a href=https://developer.mozilla.org/en-US/docs/Glossary/Primitive>https://developer.mozilla.org/en-US/docs/Glossary/Primitive</a></li><li><a href=http://www.2ality.com/2013/10/typeof-null.html>http://www.2ality.com/2013/10/typeof-null.html</a></li></ul></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

@@ -1,0 +1,39 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Python List vs Tuple |</title><meta name=description content="A simple blog."><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2014/05/06/python-list-vs-tuple/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Python List vs Tuple</h1><div class=post-metadata><time datetime=2014-05-06T00:00:00Z>May 06, 2014</time> &nbsp;
+<i class="far fa-clock"></i>
+1 min
+26 s
+&nbsp;</div></header><div class=post-text><h2 id=syntax>Syntax</h2><p>First of all, let&rsquo;s write down list and tuple syntax.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>l <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#34;a&#34;</span>, <span style=color:#e6db74>&#34;b&#34;</span>, <span style=color:#ae81ff>54</span>, <span style=color:#e6db74>&#34;hello&#34;</span>]		<span style=color:#75715e># This is a list</span>
+t <span style=color:#f92672>=</span> (<span style=color:#e6db74>&#34;a&#34;</span>, <span style=color:#e6db74>&#34;b&#34;</span>, <span style=color:#ae81ff>54</span>, <span style=color:#e6db74>&#34;hello&#34;</span>)		<span style=color:#75715e># This is a tuple</span>
+
+i <span style=color:#f92672>=</span> (<span style=color:#ae81ff>1</span>)							<span style=color:#75715e># Be careful, this is an integer!</span>
+</code></pre></div><p>The minor differences between their syntax are square brackets [] and</p><h2 id=differences>Differences</h2><h3 id=size>Size</h3><p>Basically tuples are fixed size whereas lists are dynamic. Get ready with your terminal.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>l <span style=color:#f92672>=</span> list(range(<span style=color:#ae81ff>1000</span>))
+t <span style=color:#f92672>=</span> tuple(range(<span style=color:#ae81ff>1000</span>))
+
+l<span style=color:#f92672>.</span>__sizeof__() 		<span style=color:#75715e>#9088</span>
+t<span style=color:#f92672>.</span>__sizeof__()		<span style=color:#75715e>#8024</span>
+</code></pre></div><p>Tuple consumes less amount of memory so it slightly boost up performance. Yes, just a little bit.</p><h3 id=mutability>Mutability</h3><p>Let&rsquo;s make it simple.
+List : Mutable
+Tuple : Immutable
+Let&rsquo;s make it more simple.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>l <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#34;a&#34;</span>, <span style=color:#e6db74>&#34;b&#34;</span>, <span style=color:#ae81ff>54</span>, <span style=color:#e6db74>&#34;hello&#34;</span>]		<span style=color:#75715e># This is a list</span>
+t <span style=color:#f92672>=</span> (<span style=color:#e6db74>&#34;a&#34;</span>, <span style=color:#e6db74>&#34;b&#34;</span>, <span style=color:#ae81ff>54</span>, <span style=color:#e6db74>&#34;hello&#34;</span>)		<span style=color:#75715e># This is a tuple</span>
+
+l[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;c&#34;</span>		<span style=color:#75715e># l = [&#34;a&#34;, &#34;b&#34;, &#34;c&#34;, &#34;hello&#34;]</span>
+t[<span style=color:#ae81ff>2</span>] <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;c&#34;</span>		<span style=color:#75715e># &#39;tuple&#39; object does not support item assignment</span>
+					<span style=color:#75715e># l = (&#34;a&#34;, &#34;b&#34;, 54, &#34;hello&#34;)				</span>
+</code></pre></div><h3 id=usage>Usage</h3><p>Tuples or lists? It depends. But most of the time we use lists because of we can change it&rsquo;s value. However, there are time when tuples are just handy.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>l <span style=color:#f92672>=</span> [<span style=color:#e6db74>&#34;Beautiful&#34;</span>,<span style=color:#e6db74>&#34;ugly&#34;</span>]
+t <span style=color:#f92672>=</span> (<span style=color:#e6db74>&#34;Beautiful&#34;</span>,<span style=color:#e6db74>&#34;ugly&#34;</span>)
+
+<span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;</span><span style=color:#e6db74>%s</span><span style=color:#e6db74> is better than </span><span style=color:#e6db74>%s</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> l
+<span style=color:#75715e>#TypeError: not enough arguments for format string</span>
+<span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;</span><span style=color:#e6db74>%s</span><span style=color:#e6db74> is better than </span><span style=color:#e6db74>%s</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> l
+Beautiful <span style=color:#f92672>is</span> better than ugly
+</code></pre></div><p>Yes tuples can be used for string structures. Another usage of tuple is that we can use it as a key in dictionary. For instance you want to create a dictionary that holds longitute/latitude as key and place name as value, tuple will be good for key.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python>places <span style=color:#f92672>=</span> {
+	(<span style=color:#ae81ff>27.175015</span>, <span style=color:#ae81ff>78.042155</span>): <span style=color:#e6db74>&#39;Taj Mahal&#39;</span>
+	(<span style=color:#f92672>-</span><span style=color:#ae81ff>13.163587</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>72.545861</span>) : <span style=color:#e6db74>&#39;Machu Picchu&#39;</span>
+}
+</code></pre></div><p>##Conclusion</p><ul><li>Tuples are slightly faster than lists.</li><li>Most of time we use lists instead of tuples due to its mutability.</li><li>Tuples are great for string structure, dictionary key.</li></ul><p>###Source</p><ul><li><a href=http://www.sthurlow.com/python/lesson06/>http://www.sthurlow.com/</a></li><li><a href=http://news.e-scribe.com/397>http://news.e-scribe.com/397</a></li><li><a href=http://jtauber.com/blog/2006/04/15/python_tuples_are_not_just_constant_lists/>http://jtauber.com/blog/2006/04/15/python_tuples_are_not_just_constant_lists/</a></li></ul></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

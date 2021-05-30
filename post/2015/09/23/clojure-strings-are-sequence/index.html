@@ -1,0 +1,40 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Clojure Strings Are Sequence |</title><meta name=description content="Map over string in Clojure gives us a sequence, let's see how to solve this."><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2015/09/23/clojure-strings-are-sequence/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Clojure Strings Are Sequence</h1><div class=post-metadata><time datetime=2015-09-23T00:00:00Z>September 23, 2015</time> &nbsp;
+<i class="far fa-clock"></i>
+2 min
+19 s
+&nbsp;
+<i class="fas fa-folder"></i>
+<a href=/categories/string>string</a>
+&nbsp;
+<a href=/categories/sequence>sequence</a>
+&nbsp;</div></header><div class=post-text><p>As a newbie to Clojure, I am sure all of us will meet one problem when dealing with string. Let&rsquo;s say we have a long string.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure><span style=color:#e6db74>&#34;This is a long string !&#34;</span>
+-&gt; <span style=color:#e6db74>&#34;This is a long string !&#34;</span>    // clojure will give us back this
+</code></pre></div><p>What if we want to remove all spaces ? Let&rsquo;s say we&rsquo;ll solve this by filter through the text and apply a function to check if it&rsquo;s a space. That&rsquo;s simple.</p><p>In JavaScript, we&rsquo;ll probably write something like this:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>str</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;This is a long string !&#34;</span>;
+<span style=color:#a6e22e>str</span>.<span style=color:#a6e22e>split</span>(<span style=color:#e6db74>&#34;&#34;</span>).<span style=color:#a6e22e>filter</span>(<span style=color:#66d9ef>function</span>(<span style=color:#a6e22e>c</span>) { <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>c</span> <span style=color:#f92672>!==</span> <span style=color:#e6db74>&#34; &#34;</span>}).<span style=color:#a6e22e>join</span>(<span style=color:#e6db74>&#34;&#34;</span>)
+<span style=color:#75715e>// &#34;Thisisalongstring!&#34;
+</span></code></pre></div><p>Since <code>Array.prototype.filter</code> is a method for array, so firstly we turn string into array by using <code>split</code> method. After filtering through it we will join it back.</p><p>What if we try to do this in Clojure:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(str (filter <span style=color:#f92672>#</span>(not= % <span style=color:#e6db74>\s</span>pace) <span style=color:#e6db74>&#34;This is a long string&#34;</span>))
+-&gt; <span style=color:#e6db74>&#34;clojure.lang.LazySeq@f3440d65&#34;</span>
+</code></pre></div><p>Let&rsquo;s see why this doesn&rsquo;t work in Clojure and find a solution for it.
+In Clojure, strings are sequences of characters. And Clojure characters are Java characters:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure><span style=color:#e6db74>\e</span>
+-&gt; <span style=color:#e6db74>\e</span>
+<span style=color:#e6db74>\n</span>ewline
+-&gt; newline
+</code></pre></div><p>Let&rsquo;s concat some characters using the <code>str</code> function:</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(str <span style=color:#e6db74>\c</span> <span style=color:#e6db74>\s</span>pace <span style=color:#e6db74>\l</span> <span style=color:#e6db74>\s</span>pace <span style=color:#e6db74>\j</span>)
+-&gt; <span style=color:#e6db74>&#34;c l j&#34;</span>
+</code></pre></div><p>As I said, strings are sequences of characters. So when we call sequences function in Clojure on strings, we will get a sequence(consistency!). Let&rsquo;s first filter through the string and remove the space.</p><pre><code>(filter #(not= % \space) &quot;This is a long string&quot;)
+-&gt; (\T \h \i \s \i \s \a \l \o \n \g \s \t \r \i \n \g)
+</code></pre><p>We can see at first strings are turned into sequences and get mapped to apply our function <code>#(not= % \space)</code>. Indeed we can see what does it looks like:</p><pre><code>(seq &quot;This is a long string&quot;)
+-&gt; (\T \h \i \s \space \i \s \space \a \space \l \o \n \g \space \s \t \r \i \n \g)
+</code></pre><p>Since we know how Clojure <code>str</code> works, it&rsquo;s very tempting for us to do:</p><pre><code>(str (filter #(not= % \space) &quot;This is a long string&quot;))
+-&gt; &quot;clojure.lang.LazySeq@f3440d65&quot;
+</code></pre><p>The problem is this won&rsquo;t work since we are passing a sequence of characters to the function <code>str</code> instead of strings or characters.</p><h3 id=solution-1>Solution 1</h3><p>The possible solution to this is using the <code>apply</code> function. Let&rsquo;s see how <code>apply</code> works:</p><pre><code>(apply f seq)
+</code></pre><p><code>apply</code> unroll the parameter <code>seq</code> and apply function <code>f</code> to them (<strong>Note: <code>apply</code> can accept <a href=https://clojuredocs.org/clojure.core/apply>one more optional parameter</a>.</strong>). Seems like we can solve our problem now:</p><pre><code>(apply str (filter #(not= % \space) &quot;This is a long string&quot;))
+-&gt; &quot;Thisisalongstring&quot;
+</code></pre><h3 id=solution-2>Solution 2</h3><p>Another solution is to use <code>clojure.string/join</code> which is a <a href=https://github.com/clojure/clojure/blob/a752736c1a14dce31e2f1cc30adde741328b4b12/src/clj/clojure/string.clj#L183>wrapper for <code>(apply str args)</code></a>.</p><pre><code>(clojure.string/join &quot;&quot; (filter #(not= % \space) &quot;This is a long string&quot;))
+-&gt; &quot;Thisisalongstring&quot;
+</code></pre><p>Boom !</p><h3 id=conclusion>Conclusion</h3><p>Clojure strings are sequences of characters and Clojure characters are Java characters. When a sequence function is use on string, we have to be careful on the result which is probably a list. To deal with that, we can always use the great <code>apply</code> or it&rsquo;s wrapper for <code>(apply str ...)</code> - <code>clojure.string/join</code>.</p></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

@@ -1,0 +1,44 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Update Jvm Version in Mac |</title><meta name=description content="Update Java in Mac OS"><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2015/10/01/update-jvm-version-in-mac/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Update Jvm Version in Mac</h1><div class=post-metadata><time datetime=2015-10-01T00:00:00Z>October 01, 2015</time> &nbsp;
+<i class="far fa-clock"></i>
+1 min
+21 s
+&nbsp;
+<i class="fas fa-folder"></i>
+<a href=/categories/java>Java</a>
+&nbsp;
+<a href=/categories/jvm>JVM</a>
+&nbsp;</div></header><div class=post-text><p>Being a newbie for Clojure, the problem I met when trying to use its other core library - <code>clojure.core.reducers</code> is the &ldquo;namespace not found&mldr;&rdquo;.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(<span style=color:#a6e22e>require</span> <span style=color:#f92672>&#39;</span>[clojure.core.reducers <span style=color:#e6db74>:as</span> r])
+</code></pre></div><p>Get this:</p><blockquote><p>clojure.lang.Compiler$CompilerException: java.lang.Exception: namespace &lsquo;clojure.core.reducers&rsquo; not found, compiling:
+&mldr;
+&mldr;
+&mldr;
+Caused by: java.lang.Exception: namespace &lsquo;clojure.core.reducers&rsquo; not found</p></blockquote><p>From the docs,</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-clojure data-lang=clojure>(<span style=color:#66d9ef>ns </span><span style=color:#f92672>^</span>{<span style=color:#e6db74>:doc</span>
+      <span style=color:#e6db74>&#34;A library for reduction and parallel folding. Alpha and subject
+</span><span style=color:#e6db74>      to change.  Note that fold and its derivatives require Java 7+ or
+</span><span style=color:#e6db74>      Java 6 + jsr166y.jar for fork/join support. See Clojure&#39;s pom.xml for the
+</span><span style=color:#e6db74>      dependency info.&#34;</span>
+      <span style=color:#e6db74>:author</span> <span style=color:#e6db74>&#34;Rich Hickey&#34;</span>}
+  clojure.core.reducers
+  (<span style=color:#e6db74>:refer-clojure</span> <span style=color:#e6db74>:exclude</span> [reduce map mapcat filter remove take take-while drop flatten cat])
+  (<span style=color:#e6db74>:require</span> [clojure.walk <span style=color:#e6db74>:as</span> walk]))
+</code></pre></div><p>It seems like we need Java version that support fork/join operation. Let&rsquo;s see
+what version do we have?</p><pre><code>❯ java -version
+java version &quot;1.6.0_65&quot;
+Java(TM) SE Runtime Environment (build 1.6.0_65-b14-466.1-11M4716)
+Java HotSpot(TM) 64-Bit Server VM (build 20.65-b04-466.1, mixed mode)
+</code></pre><p>Our system show we&rsquo;re using Java 6 which does not meet the requirement for <code>clojure.core.reducers</code>. We need a to upgrade our JDK. Coming from non Java background, I do not even know the JRE or JDK thing. But in this case what we need is for development, so it makes sense to just download the JDK. So let&rsquo;s download and install it from the <a href=http://www.oracle.com/technetwork/java/javase/downloads/index.html>official page</a>.</p><p>Once we finished installation, the latest version is loaded default.</p><pre><code>❯ java -version
+java version &quot;1.8.0_60&quot;
+Java(TM) SE Runtime Environment (build 1.8.0_60-b27)
+Java HotSpot(TM) 64-Bit Server VM (build 25.60-b23, mixed mode)
+</code></pre><p>If you start your repl again, you will see it&rsquo;s using the latest verison.</p><pre><code>~ ❯ lein repl
+nREPL server started on port 55481 on host 127.0.0.1 - nrepl://127.0.0.1:55481
+REPL-y 0.3.5, nREPL 0.2.6
+Clojure 1.6.0
+Java HotSpot(TM) 64-Bit Server VM 1.8.0_60-b27
+</code></pre><p>Ok so we are cool now:</p><pre><code>(require '[clojure.core.reducers :as r]) // nil
+</code></pre></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

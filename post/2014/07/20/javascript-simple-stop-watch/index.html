@@ -1,0 +1,51 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Javascript Simple Stop Watch |</title><meta name=description content="A simple blog."><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2014/07/20/javascript-simple-stop-watch/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Javascript Simple Stop Watch</h1><div class=post-metadata><time datetime=2014-07-20T00:00:00Z>July 20, 2014</time> &nbsp;
+<i class="far fa-clock"></i>
+1 min
+21 s
+&nbsp;
+<i class="fas fa-folder"></i>
+<a href=/categories/javascript>JavaScript</a>
+&nbsp;</div></header><div class=post-text><p>In this post, we&rsquo;ll see how to create a simple 3 minutes stop watch application by Javascript. Time will be counted by using <code>setInterval()</code> function. Nothing difficult here, let&rsquo;s first looks at HTML first.</p><pre><code>&lt;h3&gt;3 Minutes Stop Watch&lt;/h3&gt;
+
+&lt;p&gt; 
+	&lt;span id=&quot;min&quot;&gt;0&lt;/span&gt;min
+	&lt;span id=&quot;sec&quot;&gt;0&lt;/span&gt;sec
+&lt;/p&gt;
+&lt;p&gt;
+    &lt;button id=&quot;start&quot;&gt;Start&lt;/button&gt;
+    &lt;button id=&quot;stop&quot; disabled&gt;Stop&lt;/button&gt;
+    &lt;button id=&quot;reset&quot;&gt;Reset&lt;/button&gt;
+&lt;/p&gt;
+</code></pre><p>Text for showing remaining minutes and seconds are created in the <code>&lt;span></code> tag. This stopwatch contains 3 buttons which are <em>start</em>, <em>stop</em>, <em>reset</em>. We will use <code>addEventLister()</code> to trigger our function when any of these button is clicked.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#a6e22e>start</span> <span style=color:#f92672>=</span> document.<span style=color:#a6e22e>getElementById</span>(<span style=color:#e6db74>&#34;start&#34;</span>),
+<span style=color:#a6e22e>start</span>.<span style=color:#a6e22e>addEventListener</span>(<span style=color:#e6db74>&#34;click&#34;</span>, <span style=color:#66d9ef>function</span>(){
+	<span style=color:#75715e>// start counting
+</span><span style=color:#75715e></span>	})
+</code></pre></div><p>Stop and reset will be set similarly. Next, in our HTML we can see the <em>stop</em> button is being disabled. However, when we click <em>start</em> we want it <em>start</em> to be disabled and <em>stop</em> to be enabled. So we&rsquo;ll create a function called <code>trigger()</code> to do this.</p><pre><code>function trigger(){
+	if(start.disabled) {
+		/* start button will be disabled once it's clicked */
+		start.disabled = false;
+		stop.disabled = true;
+	} else {
+		start.disabled = true;
+		stop.disabled = false;
+	}
+};
+</code></pre><p>Next we&rsquo;ll code our function for counting down the time.</p><pre><code>function count() {
+	if (time === 0) {
+		// all showing 0
+		// interval will be cleared
+	} else {
+		// counting down time
+		var time = time - 1;
+		var second = time % 60;
+		var minute = Math.floor(time / 60);
+	}
+};
+</code></pre><p>Our stop watch application is almost done after the <code>trigger()</code> and <code>count()</code> function is done. I included a jsfiddle below to show the working application.</p><p>{% jsfiddle HF5Yf/3/ %}</p><p>Obviously I&rsquo;m not good at design. Just make sure it works.</p><p>{% blockquote Michael Sinz %}
+Programming is like sex: one mistake and you have to support it for the rest of your life.
+{% endblockquote %}</p></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

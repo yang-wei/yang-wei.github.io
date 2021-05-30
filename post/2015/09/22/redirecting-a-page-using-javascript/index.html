@@ -1,0 +1,24 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Redirecting a Page Using Javascript |</title><meta name=description content="A blog post that shows how to do redirect using JavaScript or even jQuery"><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2015/09/22/redirecting-a-page-using-javascript/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Redirecting a Page Using Javascript</h1><div class=post-metadata><time datetime=2015-09-22T00:00:00Z>September 22, 2015</time> &nbsp;
+<i class="far fa-clock"></i>
+55 s
+&nbsp;
+<i class="fas fa-folder"></i>
+<a href=/categories/redirect>redirect</a>
+&nbsp;
+<a href=/categories/client-side>client-side</a>
+&nbsp;</div></header><div class=post-text><p>If you are writing web app using JavaScript heavily, you might need to do redirect on the browser.</p><h4 id=windowlocation-object><code>window.location</code> object</h4><p>One of the method we can refer to is the global <code>location</code> object. It does provide some method for us to do the redirect.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#a6e22e>location</span>.<span style=color:#a6e22e>replace</span>(<span style=color:#e6db74>&#34;http://google.com&#34;</span>);
+<span style=color:#a6e22e>location</span>.<span style=color:#a6e22e>assign</span>(<span style=color:#e6db74>&#34;http://google.com&#34;</span>);
+</code></pre></div><p>Or we can assign the url directly to the object.</p><pre><code>location = &quot;http://google.com&quot;
+// more explicit way
+location.href = &quot;http://google.com&quot;;
+</code></pre><p>If you want a more explicit way:</p><pre><code>window.location.href = &quot;http://google.com&quot;;
+</code></pre><p>Open developer tool and try any of these in the console, you will be redirect, good bye!</p><p>(welcome back if you come back from redirect page)</p><h4 id=what-about-jquery->What about jQuery ?</h4><p>Indeed we can redirect using plain JavaScript, we don&rsquo;t even need jQuery. However in case you(or your team) insist to write code jQuery-ish, then this willl do the work:</p><pre><code>$(location).attr('href','http://www.google.com')
+$(window).attr('location','http://www.google.com')
+$(location).prop('href', 'http://www.google.com')
+</code></pre><p>Basically what this does is just take a DOM object and inject a new value to it. So if you know the plain JavaScript way this seems natural to you.</p><h4 id=extra-reload-page>Extra: Reload Page</h4><p>In some case you might want to force your page to refresh to get latest UI update or anything from server. In that case <code>location.reload</code> would be useful.</p><pre><code>location.reload(true);
+</code></pre><p>Further reading:</p><ul><li><a href=https://developer.mozilla.org/en-US/docs/Web/API/Window/location>MDN page</a></li></ul></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>

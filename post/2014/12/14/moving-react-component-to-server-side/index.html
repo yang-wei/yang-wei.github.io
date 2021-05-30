@@ -1,0 +1,93 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.83.1"><title>Moving React Component to Server Side |</title><meta name=description content="Render React on server side the isomorphic way"><link rel=stylesheet href=http://yang-wei.github.io/css/simpleness.css><link rel=canonical href=http://yang-wei.github.io/post/2014/12/14/moving-react-component-to-server-side/><link rel=alternate type=application/rss+xml href title><link href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css rel=stylesheet></head><body class=container><nav class=navigation><div class=nav-left><div class="nav-item nav-title"><a href=http://yang-wei.github.io/></a></div><div class="nav-item nav-menu"><a href=/>Home</a>
+<a href=/about/>About</a></div></div><div class="nav-item nav-right fontawesome"><a href=https://twitter.com/yangwei21 target=_blank><i title=Twitter class="fab fa-twitter"></i></a>
+<a href=https://github.com/yang-wei target=_blank><i title=GitHub class="fab fa-github"></i></a></div></nav><article class=post><header class=post-header><h1 style=text-align:center>Moving React Component to Server Side</h1><div class=post-metadata><time datetime=2014-12-14T00:00:00Z>December 14, 2014</time> &nbsp;
+<i class="far fa-clock"></i>
+4 min
+35 s
+&nbsp;
+<i class="fas fa-folder"></i>
+<a href=/categories/react>react</a>
+&nbsp;
+<a href=/categories/isomorphic>isomorphic</a>
+&nbsp;
+<a href=/categories/react-server-side>react server side</a>
+&nbsp;</div></header><div class=post-text><p>###React Server Side Rendering Example
+I had a hard time doing this, the documentation(currently <strong><em>v0.12.1</em></strong>) doesn&rsquo;t provide enough information regarding to server side rendering at the time this post was writting. Most tutorials are either outdated or din&rsquo;t really focus on this topic. Also, there are too many tools used in most examples that beginner like me will hardly understand. So I decided to write down what I had learn by and explain the tools needed to render React components on server side after struggling long enough to make it works.</p><p>####Prerequisite
+To follow this post smoothly, you will need</p><ul><li>Node (using <em>v0.10.33</em>)</li><li>npm (using <em>2.1.10</em>)</li><li>Read through <a href=http://facebook.github.io/react/docs/getting-started.html>getting-started</a> (using <em>v0.12.1</em>) on React documentation</li></ul><p>We will take the <a href=http://facebook.github.io/react/docs/thinking-in-react.html>example</a> from <em>Thinking in React</em> section on <a href=http://facebook.github.io/react>React</a> documentation. In the end we will see how to make this component</p><ul><li>rendered on server side</li><li>working on client side as well</li></ul><p>Let&rsquo;s begin by setting up our <code>package.json</code>.</p><pre><code>{
+  &quot;name&quot;: &quot;TDDReact&quot;,
+  &quot;scripts&quot;: {
+    &quot;build&quot;: &quot;browserify -t reactify app.js -o public/bundle.js&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;browserify&quot;: &quot;^7.0.0&quot;,
+    &quot;reactify&quot;: &quot;^0.17.1&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;express&quot;: &quot;^4.10.6&quot;,
+    &quot;node-jsx&quot;: &quot;^0.12.4&quot;,
+    &quot;react&quot;: &quot;^0.12.1&quot;
+  }
+}
+</code></pre><p>I try to decrease the dependency in order to achieve simplicity. For now please ignore the <em>script</em> field and other dependencies other than express. Run <code>npm install</code> and all dependencies should be installed. We will start by setting up express server. At first, <code>server.js</code> might looks like this.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>express</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;express&#39;</span>);
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>app</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>express</span>();
+
+<span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>get</span>(<span style=color:#e6db74>&#39;/&#39;</span>, <span style=color:#66d9ef>function</span>(<span style=color:#a6e22e>req</span>, <span style=color:#a6e22e>res</span>) {
+    <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>send</span>(<span style=color:#e6db74>&#39;Hello React&#39;</span>);
+});
+
+<span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>listen</span>(<span style=color:#ae81ff>9999</span>);
+</code></pre></div><p>Our server should be working if you run <code>node server.js</code>. Point browser to <code>localhost:9999</code> and everything should be working.
+locNext, let&rsquo;s grab the code from React documentation, the one we need and we will put in our <code>components/filterableProductTable.js</code>. It looks like this.</p><p>{% jsfiddle w1t7upmp js,result %}</p><p>That&rsquo;s a little thing we need to change in order to make this work on server. We will create another file name <code>app.js</code> in our root directory. This file will be used to render the whole components on both server and client side. We will see how to do that in a moment. Also we will pass in the data(in this case the <code>PRODUCTS</code>) from <code>app.js</code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>React</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;react&#39;</span>);
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>Table</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;./components/filterableProductTable.js&#39;</span>); 
+
+<span style=color:#75715e>// move data here
+</span><span style=color:#75715e></span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>PRODUCTS</span> <span style=color:#f92672>=</span> [ ...  ];
+
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>APP</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>React</span>.<span style=color:#a6e22e>createClass</span>({
+  <span style=color:#a6e22e>render</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>function</span>() {
+    <span style=color:#66d9ef>return</span> (
+      <span style=color:#f92672>&lt;</span><span style=color:#a6e22e>html</span><span style=color:#f92672>&gt;</span>
+        <span style=color:#f92672>&lt;</span><span style=color:#a6e22e>head</span><span style=color:#f92672>&gt;</span>
+          <span style=color:#f92672>&lt;</span><span style=color:#a6e22e>title</span><span style=color:#f92672>&gt;</span><span style=color:#a6e22e>React</span> <span style=color:#a6e22e>Server</span> <span style=color:#a6e22e>Rendering</span><span style=color:#f92672>&lt;</span><span style=color:#960050;background-color:#1e0010>/title&gt;</span>
+        <span style=color:#f92672>&lt;</span><span style=color:#960050;background-color:#1e0010>/head&gt;</span>
+        <span style=color:#f92672>&lt;</span><span style=color:#a6e22e>body</span><span style=color:#f92672>&gt;</span>
+          <span style=color:#f92672>&lt;</span><span style=color:#a6e22e>Table</span> <span style=color:#a6e22e>products</span><span style=color:#f92672>=</span>{<span style=color:#a6e22e>PRODUCTS</span>} <span style=color:#f92672>/&gt;</span>
+        <span style=color:#f92672>&lt;</span><span style=color:#960050;background-color:#1e0010>/body&gt;</span>
+      <span style=color:#f92672>&lt;</span><span style=color:#960050;background-color:#1e0010>/html&gt;</span>
+    );
+  }
+});
+
+<span style=color:#a6e22e>module</span>.<span style=color:#a6e22e>exports</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>APP</span>;
+</code></pre></div><p>Here we are using <em>React</em> npm tools. You see we require component from our <code>filterableProductTable.js</code> so we have to exports module from it.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>React</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;react&#39;</span>);   <span style=color:#75715e>//              &lt;-- add this on top
+</span><span style=color:#75715e></span>...
+<span style=color:#75715e>// remove PRODUCTS and the render method
+</span><span style=color:#75715e></span>...
+<span style=color:#a6e22e>module</span>.<span style=color:#a6e22e>exports</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>FilterableProductTable</span>;        <span style=color:#f92672>&lt;--</span> <span style=color:#a6e22e>add</span> <span style=color:#66d9ef>this</span> <span style=color:#a6e22e>on</span> <span style=color:#a6e22e>bottom</span>
+</code></pre></div><p>Ok need more little works on <code>server.js</code>. Because we use <em>JSX</em>, so we have to transform it to javascript in order to make it work. This is where <code>node-jsx</code> module comes in. By <code>require('node-jsx').install()</code> in our <code>app.js</code>, it automagically transform our JSX ( If you are writing React without JSX you can skip this step). Then this time when we request, we want to response with React componenets instead of Hello React!. Here, we can use <code>React.renderToString()</code> method.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;node-jsx&#39;</span>).<span style=color:#a6e22e>install</span>();              <span style=color:#75715e>// &lt;-- transform JSX to javascript
+</span><span style=color:#75715e></span><span style=color:#66d9ef>var</span> <span style=color:#a6e22e>React</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;react&#39;</span>);
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>APP</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;./app&#39;</span>);                 <span style=color:#75715e>// &lt;-- require our main component 
+</span><span style=color:#75715e></span>
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>express</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>require</span>(<span style=color:#e6db74>&#39;express&#39;</span>);
+<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>app</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>express</span>();
+
+<span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>get</span>(<span style=color:#e6db74>&#39;/&#39;</span>, <span style=color:#66d9ef>function</span>(<span style=color:#a6e22e>req</span>, <span style=color:#a6e22e>res</span>) {
+  <span style=color:#66d9ef>var</span> <span style=color:#a6e22e>markup</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>React</span>.<span style=color:#a6e22e>renderToString</span>(<span style=color:#a6e22e>APP</span>());  <span style=color:#75715e>// &lt;-- render the APP here
+</span><span style=color:#75715e></span>  <span style=color:#a6e22e>res</span>.<span style=color:#a6e22e>send</span>(<span style=color:#a6e22e>markup</span>);                          <span style=color:#75715e>// &lt;-- response with the component
+</span><span style=color:#75715e></span>});
+<span style=color:#a6e22e>app</span>.<span style=color:#a6e22e>listen</span>(<span style=color:#ae81ff>9999</span>);
+</code></pre></div><p>If we go to the browser this time, we will see the component is rendered. But wait, isn&rsquo;t that not working properly ??? If you open your developer tool you won&rsquo;t see any javascript, this is because we are just rendering static thing.</p><p>###So How??
+First of all when we send the html fragment on our <code>app.js</code>, we have to insert a bundle script which contains javascript for the client side. So how do we do this ? The answer is <a href=http://browserify.org/>Browserify</a>. In case you never use it, it&rsquo;s a tool that will bundle up all our dependencies called by <code>require()</code> and make it work in browser. Maybe you had notice we also had a dependency named <em>reactify</em> in <code>package.json</code>, similar to <em>node-jsx</em>, it&rsquo;s used to transform our jsx to javascript which works nicely with Browserify. Let&rsquo;s make a directory called <code>public</code> where we want our client side javascript(<code>bundle.js</code>) be after it&rsquo;s browserified and reactified. We can make all of this work through one line from command line.</p><pre><code>browserify --transform reactify app.js --outfile public/bundle.js
+</code></pre><p>We can make use of <code>package.json</code> script field like above, so that we only have to hit <code>npm run build</code> to trigger this command.</p><p>Then in our <code>app.js</code> html fragment, we can insert this <code>bundle.js</code>.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-html data-lang=html>&lt;<span style=color:#f92672>script</span> <span style=color:#a6e22e>src</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#34;public/bundle.js</span>&gt;&lt;/<span style=color:#f92672>script</span>&gt;
+</code></pre></div><p>Also we want to tell React that &lsquo;Hey React, if we are in browser, please render like you always do in client side&rsquo;.</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>// app.js
+</span><span style=color:#75715e></span><span style=color:#66d9ef>if</span>(<span style=color:#66d9ef>typeof</span> window <span style=color:#f92672>!==</span> <span style=color:#e6db74>&#39;undefined&#39;</span>) {
+  window.<span style=color:#a6e22e>onload</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>function</span>() {
+    <span style=color:#a6e22e>React</span>.<span style=color:#a6e22e>render</span>(<span style=color:#a6e22e>APP</span>(), document);
+  }
+}
+</code></pre></div><p>A very important note for here is we have to make sure we give React the same code to what it&rsquo;s rendered on server. If we try to render it inside of <code>document.body</code> instead of <code>document</code>, probably this won&rsquo;t work and then you will get an error like <em>React attempted to use reuse markup in a container but the checksum was invalid</em> later. Keep in mind to make sure that both markups generated by client and server side are the same.</p><p>Finally we want to serve static file in our express server. This can be easily done by adding this to <code>server.js</code>.</p><pre><code>app.use('/public', express.static(__dirname + '/public'));
+</code></pre><p>This time our React code will be working perfectly. Checkout the final source code ot <a href=https://github.com/yang-wei/react-server-rendering.git>Github</a>, clone it and play with it.</p><p>###Final thought
+I hope this can save you time to figure out how to render React components on server side. Of course you can use other tools other than what I used here, for instance <a href=http://webpack.github.io/>webpack</a> instead of Browserify, or using <a href=https://www.npmjs.org/package/react-tools>React-tools</a> to transform the JSX.</p></div><footer class=post-footer></footer><div class=comments><div class=comments></div></div></article><div class=foot>&copy; 2019 - 2021 &#183;
+<a href=/></a>&#183;
+Theme <a href=https://github.com/RainerChiang/simpleness>Simpleness</a> Powered by <a href=https://gohugo.io/>Hugo</a> &#183;
+<a href=#><i class="fas fa-chevron-up"></i></a></div></body><script src=/js/lazyload.min.js></script><script>var lazyImage=new LazyLoad({container:document.getElementById('article')})</script></html>
